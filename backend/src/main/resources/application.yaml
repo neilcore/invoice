@@ -1,0 +1,50 @@
+spring:
+   application:
+      name: "backend"
+   docker: # Docker configuration 
+      compose:
+         enabled: true
+         file: "compose.yaml"
+   # Flyway configuration      
+   flyway:
+      enabled: true
+      encoding: UTF-8
+      connect-retries: 5
+      create-schemas: true
+      schemas: "app_sc"
+      default-schema: "app_sc"
+      url: "jdbc:postgresql://localhost:5070/couverdb"
+      user: "root"
+      password: "password"
+      execute-in-transaction: true
+      locations: classpath:db/migration
+      clean-disabled: false
+   # Configure datasource
+   datasource:
+      driver-class-name: org.postgresql.Driver
+      username: "root"
+      password: "password"
+   # Configure Hibernate
+   jpa:
+      properties:
+         hibernate:
+            generate_statistics: true # ONLY FOR DEVELOPMENT
+      hibernate:
+         ddl-auto: none
+      show-sql: true
+   # Configure for JWT auth
+   app:
+      jwt:
+         secret: "5da7abccd68264a5dadf70e16ccd2a48e5174651a08af2a366f8a28e39c88c0c"
+         expiration-ms: 180000
+      details:
+         api:
+            website: "https://restcountries.com/v3.1"
+         default_credentials:
+            default_first_name: "Brock"
+            default_last_name: "Rumlow"
+            default_email: "sample123@sample.com"
+            default_password: "password123"
+            default_phone_no: "09262689148"
+server:
+   port: 8900

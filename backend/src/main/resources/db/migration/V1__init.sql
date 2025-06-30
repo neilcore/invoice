@@ -1,0 +1,1 @@
+CREATE schema IF NOT EXISTS app_sc;

@@ -1,0 +1,25 @@
+-- Create Organization table
+CREATE TABLE IF NOT EXISTS organization (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    legal_name VARCHAR(255) NOT NULL,
+    trading_name VARCHAR(255),
+    country VARCHAR(100) NOT NULL,
+    industry_type VARCHAR(100) NOT NULL,
+    phone_no VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    website VARCHAR(100),
+    tax_id_no VARCHAR(50) NOT NULL,
+    tax_basis VARCHAR(50),
+    tax_period VARCHAR(50),
+    default_currency VARCHAR(10) NOT NULL,
+    time_zone VARCHAR(50) NOT NULL,
+    physical_address_street VARCHAR(255) NOT NULL,
+    physical_address_city VARCHAR(100) NOT NULL,
+    physical_address_state VARCHAR(100) NOT NULL,
+    physical_address_postal_code VARCHAR(20) NOT NULL,
+    postal_address_street VARCHAR(255),
+    postal_address_city VARCHAR(100),
+    postal_address_state VARCHAR(100),
+    postal_address_postal_code VARCHAR(20),
+    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

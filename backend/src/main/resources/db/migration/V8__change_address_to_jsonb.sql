@@ -1,0 +1,15 @@
+-- DROP THE ADDRESS FIELDS FROM CONTACT TABLE AND ADD A NEW JSONB ADDRESS FIELD
+BEGIN;
+
+ALTER TABLE contact
+    DROP COLUMN address_type,
+    DROP COLUMN city,
+    DROP COLUMN region,
+    DROP COLUMN country,
+    DROP COLUMN postal_code,
+    DROP COLUMN attention_to;
+    
+ALTER TABLE contact
+    ADD COLUMN address JSONB NOT NULL;
+    
+COMMIT;

@@ -1,0 +1,17 @@
+package core.hubby.backend.business.repositories;
+
+import java.util.UUID;
+
+import org.springframework.stereotype.Repository;
+
+import core.hubby.backend.business.entities.LineItems;
+import core.hubby.backend.core.data.BaseJpaRepository;
+
+@Repository
+public interface LineItemRepository extends BaseJpaRepository<LineItems, UUID> {
+	// LineAmount types
+	static final String LINE_AMOUNT_TYPE_EXCLUSIVE = "EXCLUSIVE"; //Line items are exclusive of tax
+	static final String LINE_AMOUNT_TYPE_INCLUSIVE = "INCLUSIVE"; //Line items are inclusive tax
+	static final String LINE_AMOUNT_TYPE_NO_TAX = "NO_TAX"; //Line have no tax
+
+}
