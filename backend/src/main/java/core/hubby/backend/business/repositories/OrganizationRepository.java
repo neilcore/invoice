@@ -53,6 +53,10 @@ public interface OrganizationRepository extends BaseJpaRepository<Organization, 
 	static final String ADDRESS_LINE_3 = "addressLine3";
 	static final String ADDRESS_LINE_4 = "addressLine4";
 	
+	// Payment terms Elements
+	static final String PAYMENT_TERMS_BILLS = "BILLS";
+	static final String PAYMENT_TERMS_SALES = "SALES";
+	
 	@Query("select org from Organization org where org.id = :id")
 	Optional<Organization> findOrganizationById(@Param("id") UUID id);
 	

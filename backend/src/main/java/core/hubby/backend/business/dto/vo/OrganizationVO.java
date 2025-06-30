@@ -31,7 +31,7 @@ public record OrganizationVO (List<Details> organization, List<Map<String, Strin
 			Set<PhoneDetail> phoneNo,
 			String email,
 			String website,
-			Map<String, String> taxtDetails
+			TaxDetails taxtDetails
 	) {
 		public Details {
 			if (users.isEmpty()) {
@@ -54,6 +54,15 @@ public record OrganizationVO (List<Details> organization, List<Map<String, Strin
 			}
 			if (email == null || email.isBlank()) {
 				throw new IllegalArgumentException("Email is mandatory");
+			}
+		}
+	}
+	
+	// Nested record class >> TaxDetails
+	public record TaxDetails(String taxIdNo, String taxBasis, String taxPeriod) {
+		public TaxDetails {
+			if (taxIdNo.isBlank() || taxIdNo.isEmpty()) {
+				throw new IllegalArgumentException("taxIdNo component cannot be null.");
 			}
 		}
 	}

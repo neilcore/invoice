@@ -3,6 +3,8 @@ package core.hubby.backend.core.helper;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
@@ -10,6 +12,7 @@ import org.springframework.web.client.RestClient;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+// TODO work and improve this countries API and TEST
 @Component
 public class CountriesApiHelper {
 	@Value("${spring.app.details.api.website}")
@@ -40,10 +43,10 @@ public class CountriesApiHelper {
 	}
 	
 	// Get the two letter country code
-	public List<String> getTwoLetterCountryCode() {
+	public Set<String> getTwoLetterCountryCode() {
 		return restClient.get()
 				.uri(URI.create(this.uri))
 				.retrieve()
-				.body(new ParameterizedTypeReference<List<String>>() {});
+				.body(new ParameterizedTypeReference<Set<String>>() {});
 	}
 }

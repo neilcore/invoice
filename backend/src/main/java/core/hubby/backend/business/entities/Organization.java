@@ -1,12 +1,13 @@
 package core.hubby.backend.business.entities;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
+
+import core.hubby.backend.business.entities.embedded.BillAndSalesPaymentTermElement;
 import core.hubby.backend.business.entities.embedded.ExternalLinks;
 import core.hubby.backend.business.entities.embedded.FinancialSettings;
 import core.hubby.backend.business.entities.embedded.OrganizationUserInvites;
@@ -138,6 +139,11 @@ public class Organization implements Serializable {
 			joinColumns = @JoinColumn(name = "organization_id", nullable = false, referencedColumnName = "id")
 	)
 	private Set<ExternalLinks> externalLinks;
+	
+	@Type(JsonType.class)
+	@Column(name = "payment_terms", nullable = false)
+	@NotNull(message = "Organization payment terms cannot be null")
+	private Map<String, Set<Map<String, BillAndSalesPaymentTermElement>>> paymentTerms;
 	
 	@Embedded
 	@AttributeOverride(name = "createdDate", column = @Column(name = "created_date", nullable = false))
