@@ -3,7 +3,7 @@ package core.hubby.backend.business.dto.vo;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Set;
 
 import core.hubby.backend.core.dto.PhoneDetail;
 
@@ -23,12 +23,12 @@ public record OrganizationVO (List<Details> organization, List<Map<String, Strin
 	 * Organization details 
 	 **/
 	public record Details(
-			List<OrganizationUsers> users,
+			Set<OrganizationUsers> users,
 			String name,
 			String legalName,
 			String country,
 			String organizationType,
-			PhoneDetail phoneNo,
+			Set<PhoneDetail> phoneNo,
 			String email,
 			String website,
 			Map<String, String> taxtDetails
@@ -75,7 +75,7 @@ public record OrganizationVO (List<Details> organization, List<Map<String, Strin
 		}
 		
 		// Nested record class >> for users
-		public record User(UUID userId, String firstName, String lastName, String email) {
+		public record User(String userId, String firstName, String lastName, String email) {
 			public User{
 				if (userId == null) {
 					throw new IllegalArgumentException("User UserId component cannot be null.");

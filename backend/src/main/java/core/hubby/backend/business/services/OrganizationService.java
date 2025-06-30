@@ -20,13 +20,13 @@ import core.hubby.backend.business.repositories.OrganizationRepository;
 import core.hubby.backend.business.repositories.OrganizationTypeRepository;
 import core.hubby.backend.business.repositories.UserRepository;
 import core.hubby.backend.core.dto.ExternalLink;
+import core.hubby.backend.core.dto.PhoneDetail;
 import core.hubby.backend.core.helper.AddressHelper;
 import core.hubby.backend.core.helper.ContactNumberHelper;
 import core.hubby.backend.core.helper.CountriesApiHelper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
-import java.security.Identity;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,7 +65,7 @@ public class OrganizationService {
 	public OrganizationVO createOrganization(CreateOrganizationDTO data) {
 		
 		// Validate Phone Number
-		Set<Map<String, Object>> phoneSet = contactNumberHelper.parsePhoneNumbers(data.phoneNo());
+		Set<PhoneDetail> phoneSet = contactNumberHelper.parsePhoneNumbers(data.phoneNo());
 		
 		// Add current authenticated user as the organization's subscriber
 		OrganizationUsers subscriber = OrganizationUsers.builder()
@@ -165,12 +165,12 @@ public class OrganizationService {
 					.orElseThrow(() -> new IllegalArgumentException("Organization entity cannot be found."));
 			
 			organizationDetails = new OrganizationVO.Details(
-					formatOwnerRetrieval(findOrganization.getOrganizationUsers()),
+					transformOrganizationUsers(findOrganization.getOrganizationUsers()),
 					findOrganization.getName(),
 					findOrganization.getLegalName(),
 					findOrganization.getCountry(),
 					findOrganization.getOrganizationType().getName(),
-					findOrganization.getPhoneNo(),
+					findOrganization.getPhoneNo().get("phones"),
 					findOrganization.getEmail(),
 					findOrganization.getWebsite(),
 					generateTaxDetails(findOrganization.getTaxDetails())
@@ -179,13 +179,18 @@ public class OrganizationService {
 			TaxDetails taxDetails = organizationObject.getTaxDetails();
 			Map<String, String> getTaxDetails = generateTaxDetails(taxDetails);
 			
+			// Get organization users
+			Set<OrganizationVO.OrganizationUsers> organizationUsers = transformOrganizationUsers(
+					organizationObject.getOrganizationUsers()
+					);
+			
 			organizationDetails = new OrganizationVO.Details(
-					formatOwnerRetrieval(organizationObject.getOrganizationUsers()),
+					organizationUsers,
 					organizationObject.getName(),
 					organizationObject.getLegalName(),
 					organizationObject.getCountry(),
 					organizationObject.getOrganizationType().getName(),
-					organizationObject.getPhoneNo(),
+					organizationObject.getPhoneNo().get("phones"),
 					organizationObject.getEmail(),
 					organizationObject.getWebsite(),
 					getTaxDetails
@@ -198,11 +203,27 @@ public class OrganizationService {
 		return new OrganizationVO(details, orgTypes);
 	}
 	
-	/* Format the owner retrieval */
-	private List<Map<String, String>> formatOwnerRetrieval(List<OrganizationUsers> users) {
-		return users.stream()
-				.map(usr -> Map.of("userId", usr.getUserId().toString(), "userRole", usr.getUserRole(), "userJoined", usr.getUserJoined().toString()))
-				.toList();
+	// Transform organization users to OrganizationVO.OrganizationUsers object type
+	private Set<OrganizationVO.OrganizationUsers> transformOrganizationUsers(Set<OrganizationUsers> orgUsers) {
+		Set<OrganizationVO.OrganizationUsers> organizationUsers = new HashSet<>();
+		
+		for(OrganizationUsers orgUser: orgUsers) {
+			organizationUsers.add(
+					new OrganizationVO.OrganizationUsers(
+							new OrganizationVO.OrganizationUsers.User(
+									orgUser.getUserId().getId().toString(),
+									orgUser.getUserId().getFirstName(),
+									orgUser.getUserId().getLastName(),
+									orgUser.getUserId().getEmail()
+									),
+							orgUser.getUserRole(),
+							orgUser.getUserJoined()
+							
+					)
+					);
+		}
+		
+		return organizationUsers;
 	}
 	
 	private List<Map<String, String>> getOrganizationTypes(){

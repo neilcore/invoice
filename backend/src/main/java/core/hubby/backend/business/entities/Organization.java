@@ -14,6 +14,7 @@ import core.hubby.backend.business.entities.embedded.OrganizationUsers;
 import core.hubby.backend.business.entities.embedded.TaxDetails;
 import core.hubby.backend.business.enums.Status;
 import core.hubby.backend.core.audit.CreatedDate;
+import core.hubby.backend.core.dto.PhoneDetail;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
@@ -99,7 +100,7 @@ public class Organization implements Serializable {
 	@Column(name = "phone_no", nullable = false)
 	@NotNull(message = "Organization phone number is required")
 	@Type(JsonType.class)
-	private Map<String, Object> phoneNo;
+	private Map<String, Set<PhoneDetail>> phoneNo;
 	
 	@Column(name = "email", nullable = false)
 	@NotBlank(message = "Email is mandatory")
@@ -128,7 +129,7 @@ public class Organization implements Serializable {
 	@Type(JsonType.class)
 	@Column(name = "address", nullable = false)
 	@NotNull(message = "Organization address cannot be null")
-	private Map<String, Object> address;
+	private Map<String, Set<Map<String, String>>> address;
 	
 	@ToString.Exclude
 	@ElementCollection

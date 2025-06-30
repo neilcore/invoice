@@ -56,8 +56,8 @@ public class ContactNumberHelper {
 		return transformPhoneNumber(phoneNo, country);
 	}
 	
-	public Set<Map<String, Object>> parsePhoneNumbers(Set<PhoneDetail> phones) {
-		Set<Map<String, Object>> validatedPhones = new HashSet<>();
+	public Set<PhoneDetail> parsePhoneNumbers(Set<PhoneDetail> phones) {
+		Set<PhoneDetail> validatedPhones = new HashSet<>();
 		
 		for (PhoneDetail phone: phones) {
 			// Check if phone type is valid
@@ -66,12 +66,12 @@ public class ContactNumberHelper {
 			}
 			PhoneNumber parsedPhone = parsePhoneNumber(phone.phoneNumber(), phone.phoneCountryCode());
 			validatedPhones.add(
-					Map.of(
-							"phoneType", phone.phoneType(),
-							"phoneNumber", parsedPhone.getNationalNumber(),
-							"phoneAreaCode", phone.phoneAreaCode(),
-							"phoneCountryCode", parsedPhone.getCountryCode(),
-							"isDefault", phone.isDefault() ? true : false
+					new PhoneDetail(
+							phone.phoneType(),
+							String.valueOf(parsedPhone.getNationalNumber()),
+							phone.phoneAreaCode().toString(),
+							String.valueOf(parsedPhone.getCountryCode()),
+							phone.isDefault() ? Boolean.TRUE : Boolean.FALSE
 					)
 			);
 		}
