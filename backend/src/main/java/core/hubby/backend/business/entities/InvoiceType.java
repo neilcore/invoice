@@ -1,5 +1,6 @@
 package core.hubby.backend.business.entities;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -18,7 +19,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class InvoiceType {
+public class InvoiceType implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	@Id @GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
 	

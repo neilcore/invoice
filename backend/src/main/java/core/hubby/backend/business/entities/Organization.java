@@ -53,6 +53,8 @@ import lombok.ToString;
 @ToString
 @Builder
 public class Organization implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	@Id @GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
 	

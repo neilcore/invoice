@@ -1,5 +1,4 @@
 package core.hubby.backend;
-import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,8 +8,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import core.hubby.backend.business.controller.OrganizationController;
-import core.hubby.backend.business.dto.param.OrganizationDetailsDTO;
-import core.hubby.backend.business.dto.vo.OrganizationVO;
 import core.hubby.backend.business.services.OrganizationService;
 
 @WebMvcTest(OrganizationController.class)

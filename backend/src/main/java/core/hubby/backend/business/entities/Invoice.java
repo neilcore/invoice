@@ -15,7 +15,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -35,6 +34,8 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 public class Invoice implements java.io.Serializable {
+	private static final long serialVersionUID = 1L;
+
 	@Id @GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "id")
 	private UUID id;

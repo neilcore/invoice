@@ -18,6 +18,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PaymentTerms implements java.io.Serializable {
+	private static final long serialVersionUID = 1L;
+
 	@Id @GeneratedValue(strategy = jakarta.persistence.GenerationType.UUID)
 	private UUID id;
 	

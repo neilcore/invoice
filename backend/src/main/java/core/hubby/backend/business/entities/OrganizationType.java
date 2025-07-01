@@ -1,5 +1,6 @@
 package core.hubby.backend.business.entities;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 import jakarta.persistence.Entity;
@@ -19,7 +20,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrganizationType {
+public class OrganizationType implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	@Id @GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
 	
