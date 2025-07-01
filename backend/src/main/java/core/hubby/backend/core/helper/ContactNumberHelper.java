@@ -7,6 +7,8 @@ import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
@@ -17,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class ContactNumberHelper {
+	private final ObjectMapper objectMapper;
 	private final CountriesApiHelper countriesApiHelper;
 	private static final Set<String> phoneTypes = new HashSet<>();
 	private static PhoneNumberUtil UTIL = null;
@@ -56,7 +59,12 @@ public class ContactNumberHelper {
 		return transformPhoneNumber(phoneNo, country);
 	}
 	
-	public Set<PhoneDetail> parsePhoneNumbers(Set<PhoneDetail> phones) {
+	/**
+	 * This method is used to parse phone numbers
+	 * @param phones
+	 * @return - a Set<PhoneDetail> in a string format
+	 */
+	public String parsePhoneNumbers(Set<PhoneDetail> phones) {
 		Set<PhoneDetail> validatedPhones = new HashSet<>();
 		
 		for (PhoneDetail phone: phones) {
@@ -76,6 +84,29 @@ public class ContactNumberHelper {
 			);
 		}
 		
-		return validatedPhones;
+		return validatedPhones.toString();
+	}
+	
+	/**
+	 * TODO learn about Jackson's TypeReference
+	 * This method will map json in string format to
+	 * Set<PhoneDetail> format.
+	 * @param phonesJsonString - Map type that contains a single node called "phones"
+	 * @return - will return a Set<PhoneDetail> object
+	 */
+	public Set<PhoneDetail> mapPhoneJsonStringToPhoneDetailObject(Map<String, String> phonesJsonString) {
+		Set<PhoneDetail> phoneDetails = null;
+		String phoneSetStringJson = phonesJsonString.get("phones");
+		
+		try {
+			phoneDetails = objectMapper.readValue(
+					phoneSetStringJson,
+					new TypeReference<Set<PhoneDetail>>() {}
+			);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return phoneDetails;
 	}
 }

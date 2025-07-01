@@ -5,9 +5,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 
-import core.hubby.backend.business.entities.embedded.BillAndSalesPaymentTermElement;
 import core.hubby.backend.business.entities.embedded.ExternalLinks;
 import core.hubby.backend.business.entities.embedded.FinancialSettings;
 import core.hubby.backend.business.entities.embedded.OrganizationUserInvites;
@@ -15,7 +17,6 @@ import core.hubby.backend.business.entities.embedded.OrganizationUsers;
 import core.hubby.backend.business.entities.embedded.TaxDetails;
 import core.hubby.backend.business.enums.Status;
 import core.hubby.backend.core.audit.CreatedDate;
-import core.hubby.backend.core.dto.PhoneDetail;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
@@ -64,8 +65,7 @@ public class Organization implements Serializable {
 			schema = "app_sc",
 			name = "organization_users",
 			joinColumns = {
-					@JoinColumn(name = "organization_id", referencedColumnName = "id", nullable = false),
-					@JoinColumn(name = "organization_status", referencedColumnName = "status", nullable = false)
+					@JoinColumn(name = "organization_id", referencedColumnName = "id", nullable = false)
 			})
 	private Set<OrganizationUsers> organizationUsers;
 	
@@ -100,10 +100,11 @@ public class Organization implements Serializable {
 	private OrganizationType organizationType;
 	
 	/* Contact Details */	
+	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(name = "phone_no", nullable = false)
 	@NotNull(message = "Organization phone number is required")
 	@Type(JsonType.class)
-	private Map<String, Set<PhoneDetail>> phoneNo;
+	private Map<String, String> phoneNo;
 	
 	@Column(name = "email", nullable = false)
 	@NotBlank(message = "Email is mandatory")
@@ -129,10 +130,11 @@ public class Organization implements Serializable {
 	})
 	private FinancialSettings financialSettings;
 	
+	@JdbcTypeCode(SqlTypes.JSON)
 	@Type(JsonType.class)
 	@Column(name = "address", nullable = false)
 	@NotNull(message = "Organization address cannot be null")
-	private Map<String, Set<Map<String, String>>> address;
+	private Map<String, String> address;
 	
 	@ToString.Exclude
 	@ElementCollection
@@ -145,7 +147,7 @@ public class Organization implements Serializable {
 	@Type(JsonType.class)
 	@Column(name = "payment_terms", nullable = false)
 	@NotNull(message = "Organization payment terms cannot be null")
-	private Map<String, Set<Map<String, BillAndSalesPaymentTermElement>>> paymentTerms;
+	private Map<String, String> paymentTerms;
 	
 	@Embedded
 	@AttributeOverride(name = "createdDate", column = @Column(name = "created_date", nullable = false))

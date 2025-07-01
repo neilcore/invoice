@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 import core.hubby.backend.auth.util.CurrentUserUtil;
 import core.hubby.backend.business.dto.param.OrganizationDetailsDTO;
 import core.hubby.backend.business.dto.param.UpdateUserOrganizationInvitation;
-import core.hubby.backend.business.dto.vo.OrganizationElementVO;
 import core.hubby.backend.business.dto.vo.OrganizationVO;
 import core.hubby.backend.business.entities.Organization;
 import core.hubby.backend.business.entities.OrganizationType;
@@ -23,7 +22,6 @@ import core.hubby.backend.business.repositories.UserRepository;
 import core.hubby.backend.core.dto.PhoneDetail;
 import core.hubby.backend.core.helper.AddressHelper;
 import core.hubby.backend.core.helper.ContactNumberHelper;
-import core.hubby.backend.core.helper.CountriesApiHelper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -48,7 +46,6 @@ public class OrganizationService {
 	private final OrganizationTypeRepository organizationTypeRepository;
 	private final ContactNumberHelper contactNumberHelper;
 	private final AddressHelper addressHelper;
-	private final CountriesApiHelper countriesApiHelper;
 	
 	/**
 	 * This will hold the current authenticated user
@@ -69,9 +66,6 @@ public class OrganizationService {
 	
 	@Transactional
 	public OrganizationVO createOrganization(OrganizationDetailsDTO data) {
-		
-		// Validate Phone Number
-		Set<PhoneDetail> phoneSet = contactNumberHelper.parsePhoneNumbers(data.phoneNo());
 		
 		// Add current authenticated user as the organization's subscriber
 		OrganizationUsers subscriber = OrganizationUsers.builder()
@@ -121,9 +115,9 @@ public class OrganizationService {
 				.tradingName(data.tradingName())
 				.country(data.countryCode())
 				.organizationType(getOrganizationType(data.organizationType()))
-				.phoneNo(Map.of("phones", phoneSet))
+				.phoneNo(Map.of("phones", contactNumberHelper.parsePhoneNumbers(data.phoneNo())))
 				.email(data.email())
-				.address(Map.of("address", transformedAddress))
+				.address(Map.of("address", transformedAddress.toString()))
 				.taxDetails(createTaxDetails(data.taxDetails()))
 				.financialSettings(createFinancialSetting(data.financialSettings()))
 				.externalLinks(
@@ -132,7 +126,7 @@ public class OrganizationService {
 						externalLinks.contains(lkFilter.getLinkType().toLowerCase())
 						).collect(Collectors.toSet())
 				)
-				.paymentTerms(Map.of("paymentTerms", Set.of(paymentTerms)))
+				.paymentTerms(Map.of("paymentTerms", Set.of(paymentTerms).toString()))
 				.build();
 		
 		Organization org = organizationRepository.save(newOrganization);
@@ -201,13 +195,18 @@ public class OrganizationService {
 			Organization findOrganization = organizationRepository.findOrganizationById(organizationId)
 					.orElseThrow(() -> new IllegalArgumentException("Organization entity cannot be found."));
 			
+			// Map Json phone details in string format to Set<PhoneDetail> format
+			Set<PhoneDetail> phoneDetails = contactNumberHelper.mapPhoneJsonStringToPhoneDetailObject(
+					findOrganization.getPhoneNo()
+					);
+			
 			organizationDetails = new OrganizationVO.Details(
 					transformOrganizationUsers(findOrganization.getOrganizationUsers()),
 					findOrganization.getName(),
 					findOrganization.getLegalName(),
 					findOrganization.getCountry(),
 					findOrganization.getOrganizationType().getName(),
-					findOrganization.getPhoneNo().get("phones"),
+					phoneDetails,
 					findOrganization.getEmail(),
 					findOrganization.getWebsite(),
 					generateTaxDetails(findOrganization.getTaxDetails())
@@ -218,13 +217,18 @@ public class OrganizationService {
 					organizationObject.getOrganizationUsers()
 					);
 			
+			// Map Json phone details in string format to Set<PhoneDetail> format
+			Set<PhoneDetail> phoneDetails = contactNumberHelper.mapPhoneJsonStringToPhoneDetailObject(
+					organizationObject.getPhoneNo()
+					);
+			
 			organizationDetails = new OrganizationVO.Details(
 					organizationUsers,
 					organizationObject.getName(),
 					organizationObject.getLegalName(),
 					organizationObject.getCountry(),
 					organizationObject.getOrganizationType().getName(),
-					organizationObject.getPhoneNo().get("phones"),
+					phoneDetails,
 					organizationObject.getEmail(),
 					organizationObject.getWebsite(),
 					generateTaxDetails(organizationObject.getTaxDetails())

@@ -21,7 +21,7 @@ public class CountriesApiHelper {
 	private String field;
 	private String uri;
 	
-	
+	// TODO fix CountriesApiHelper constructor
 	public CountriesApiHelper(RestClient.Builder clientBuilder, String field, String uri) {
 		this.field = field;
 		this.uri = uri;

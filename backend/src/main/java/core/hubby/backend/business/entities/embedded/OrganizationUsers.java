@@ -37,4 +37,8 @@ public class OrganizationUsers {
 	@Column(name = "user_joined", nullable = false)
 	@Builder.Default
 	private LocalDate userJoined = LocalDate.now();
+	
+	@Column(name = "organization_status", nullable = false)
+	@NotBlank(message = "organizationStatus cannpt be blank.")
+	private String organizationStatus;
 }

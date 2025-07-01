@@ -1,2 +1,3 @@
+-- Typecasting: phone_no::jsonb
 ALTER TABLE organization
-ALTER COLUMN phone_no TYPE JSONB phone_no::jsonb;
+ALTER COLUMN phone_no TYPE JSONB USING phone_no::jsonb;
