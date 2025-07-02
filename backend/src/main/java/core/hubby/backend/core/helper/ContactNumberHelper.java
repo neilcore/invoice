@@ -2,6 +2,7 @@ package core.hubby.backend.core.helper;
 
 import java.time.chrono.IsoChronology;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -64,8 +65,8 @@ public class ContactNumberHelper {
 	 * @param phones
 	 * @return - a Set<PhoneDetail> in a string format
 	 */
-	public String parsePhoneNumbers(Set<PhoneDetail> phones) {
-		Set<PhoneDetail> validatedPhones = new HashSet<>();
+	public String parsePhoneNumbers(LinkedHashSet<PhoneDetail> phones) {
+		LinkedHashSet<PhoneDetail> validatedPhones = new LinkedHashSet<>();
 		
 		for (PhoneDetail phone: phones) {
 			// Check if phone type is valid

@@ -1,10 +1,12 @@
 package core.hubby.backend.business.dto.param;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import core.hubby.backend.business.entities.embedded.BillAndSalesPaymentTermElement;
 import core.hubby.backend.business.entities.embedded.ExternalLinks;
+import core.hubby.backend.business.entities.embedded.TaxDetails;
 import core.hubby.backend.core.dto.PhoneDetail;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -23,11 +25,11 @@ public record OrganizationDetailsDTO(
 		@NotBlank(message = "Organization countryCode component cannot be blank.")
 		@Size(min = 2, max = 2)
 		String countryCode,
-		Set<PhoneDetail> phoneNo,
+		LinkedHashSet<PhoneDetail> phoneNo,
 		@Email(message = "Invalid organization email.")
 		String email,
 		Set<Map<String, String>> address,
-		AddTaxDetails taxDetails,
+		TaxDetails taxDetails,
 		Map<String, BillAndSalesPaymentTermElement> paymentTerms,
 		AddFinancialSetting financialSettings,
 		Set<ExternalLinks> externalLinks
@@ -48,16 +50,6 @@ public record OrganizationDetailsDTO(
 	public record AddFinancialSetting(
 			@NotBlank(message = "defaultCurrency component cannot be blank") String defaultCurrency,
 			@NotBlank(message = "timeZone component cannot be blank.") String timeZone
-	) {
-	}
-	
-	/**
-	 * Nested record class for handling tax details
-	 */
-	public record AddTaxDetails(
-			@NotBlank(message = "taxIdNo component cannot be blank.") String taxIdNo,
-			String taxBasis,
-			String taxPeriod
 	) {
 	}
  }

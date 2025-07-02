@@ -1,6 +1,7 @@
 package core.hubby.backend.business.entities;
 
 import java.io.Serializable;
+import java.security.PrivateKey;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -35,6 +36,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -58,6 +60,9 @@ public class Organization implements Serializable {
 
 	@Id @GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
+	
+	@OneToOne(fetch = FetchType.LAZY, mappedBy = "organization")
+	private OrganizationNameUpdate organizationNameUpdate;
 	
 	@ElementCollection
 	@CollectionTable(

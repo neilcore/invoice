@@ -8,8 +8,16 @@ import java.util.Set;
 import org.apache.commons.text.CaseUtils;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import core.hubby.backend.core.dto.PhoneDetail;
+import lombok.RequiredArgsConstructor;
+
 @Component
+@RequiredArgsConstructor
 public class AddressHelper {
+	private final ObjectMapper objectMapper;
 	private static final Set<String> addressLines = new HashSet<>();
 	
 	static {
@@ -65,6 +73,27 @@ public class AddressHelper {
             }
         }
         return finalAddresses;
+    }
+    
+    /**
+     * This method will transform a json address string format
+     * to Set<Map<String, String>> object type
+     * @param address
+     * @return
+     */
+    public Set<Map<String, String>> jsonAddressStringToSetObject(String address) {
+    	Set<Map<String, String>> addressDetail = null;
+    	
+		try {
+			addressDetail = objectMapper.readValue(
+					address,
+					new TypeReference<Set<Map<String, String>>>() {}
+			);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return addressDetail;
     }
 	
 }

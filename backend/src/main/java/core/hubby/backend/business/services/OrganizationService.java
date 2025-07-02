@@ -6,6 +6,7 @@ import core.hubby.backend.business.dto.param.OrganizationDetailsDTO;
 import core.hubby.backend.business.dto.param.UpdateUserOrganizationInvitation;
 import core.hubby.backend.business.dto.vo.OrganizationVO;
 import core.hubby.backend.business.entities.Organization;
+import core.hubby.backend.business.entities.OrganizationNameUpdate;
 import core.hubby.backend.business.entities.OrganizationType;
 import core.hubby.backend.business.entities.User;
 import core.hubby.backend.business.entities.embedded.AddressDetails;
@@ -24,14 +25,18 @@ import core.hubby.backend.core.helper.AddressHelper;
 import core.hubby.backend.core.helper.ContactNumberHelper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Service("OrganizationService")
@@ -118,7 +123,7 @@ public class OrganizationService {
 				.phoneNo(Map.of("phones", contactNumberHelper.parsePhoneNumbers(data.phoneNo())))
 				.email(data.email())
 				.address(Map.of("address", transformedAddress.toString()))
-				.taxDetails(createTaxDetails(data.taxDetails()))
+				.taxDetails(data.taxDetails())
 				.financialSettings(createFinancialSetting(data.financialSettings()))
 				.externalLinks(
 						data.externalLinks().stream()
@@ -144,30 +149,47 @@ public class OrganizationService {
 	private Map<String, BillAndSalesPaymentTermElement> validatePaymentTerms(
 			Map<String, BillAndSalesPaymentTermElement> data
 	) {
-		Map<String, BillAndSalesPaymentTermElement> paymentTerms = new HashMap<>();
-		Set<String> paymentTermLists = paymentTermsRepository.findAll().stream()
+		List<String> paymentTermLists = paymentTermsRepository.findAll().stream()
 				.map(trms -> trms.getName())
-				.collect(Collectors.toSet());
+				.toList();
 		
-		for (Map.Entry<String, BillAndSalesPaymentTermElement> entry: data.entrySet()) {
-			if (!paymentTermsElements.contains(entry.getKey().toUpperCase())) {
-				throw new IllegalArgumentException("Unknown key name: " + entry.getKey());
+		/**
+		 * This is check if the map keys follow the proper
+		 * naming conventions.
+		 * @throw IllegalArgumentException - if found
+		 * any violations.
+		 */
+		data.keySet().forEach(
+				ky -> {
+					if (!ky.matches("^[A-Z]+$")) {
+						throw new IllegalArgumentException("Unknown key name: " + ky);
+					}
+				}
+		);
+		
+		/**
+		 * This will retain payment terms values that are only
+		 * contained in the specified collections (paymentTermLists).
+		 * this will remove elements that are not contained in the 
+		 * specified collections
+		 */
+		List<String> paymentTermsValues = data.values().stream()
+				.map(pymt -> pymt.getPaymentTerm())
+				.toList();
+		
+		Map<String, BillAndSalesPaymentTermElement> paymentTerms = new HashMap<>();
+		if (!paymentTermLists.containsAll(paymentTermsValues)) {
+			
+			throw new IllegalArgumentException("Unknown payment term values.");
+			
+		} else {
+			
+			for (Map.Entry<String, BillAndSalesPaymentTermElement> entry: data.entrySet()) {
+				paymentTerms.put(entry.getKey().toUpperCase(), entry.getValue());
 			}
-			if (!paymentTermLists.contains(entry.getValue().getPaymentTerm().toUpperCase())) {
-				throw new IllegalArgumentException("Unknown payment terms element " + entry.getValue().getPaymentTerm());
-			}
-			paymentTerms.put(entry.getKey().toUpperCase(), entry.getValue());
 		}
 		
 		return paymentTerms;
-	}
-	
-	public TaxDetails createTaxDetails(OrganizationDetailsDTO.AddTaxDetails tax) {
-		TaxDetails taxDetails = new TaxDetails();
-		taxDetails.setTaxIdNo(tax.taxIdNo());
-		taxDetails.setTaxBasis(tax.taxBasis()!= null ? tax.taxBasis() : "");
-		taxDetails.setTaxPeriod(tax.taxPeriod() != null ? tax.taxPeriod() : "");
-		return taxDetails;
 	}
 	
 	public OrganizationVO.TaxDetails generateTaxDetails(TaxDetails details) {
@@ -319,12 +341,68 @@ public class OrganizationService {
 	}
 	
 	/**
+	 * This method is used to updated an organization entity
+	 * organization names (name, legalName, tradingName) are only Updatable
+	 * once every 20 days
 	 * TODO work with updateOrganization service method
 	 * @param organizationId
 	 * @param updatedData
 	 * @return
 	 */
 	public OrganizationVO updateOrganization(UUID organizationId, OrganizationDetailsDTO updatedData) {
+		Organization getOrganization = organizationRepository.findById(organizationId)
+				.orElseThrow(() -> new IllegalArgumentException("Organization object cannot be found."));
+		OrganizationNameUpdate organizationNameState = getOrganization.getOrganizationNameUpdate();
+		
+		if (!Objects.equals(getOrganization.getName(), updatedData.name())) {
+			if (organizationNameState.isOrganizationNameUpdatable()) {
+				getOrganization.setName(updatedData.name());
+				organizationNameState.setUpdatedDate(LocalDate.now());
+			}
+		}
+		
+		if (!Objects.equals(getOrganization.getLegalName(), updatedData.legalName())) {
+			if (organizationNameState.isOrganizationNameUpdatable()) {
+				getOrganization.setLegalName(updatedData.legalName());
+				organizationNameState.setUpdatedDate(LocalDate.now());
+			}
+		}
+		
+		if (!Objects.equals(getOrganization.getTradingName(), updatedData.tradingName())) {
+			if (organizationNameState.isOrganizationNameUpdatable()) {
+				getOrganization.setTradingName(updatedData.tradingName());
+				organizationNameState.setUpdatedDate(LocalDate.now());
+			}
+		}
+		
+		OrganizationType getOrganizationType = getOrganizationType(updatedData.organizationType());
+		if (!Objects.equals(getOrganization.getOrganizationType(), getOrganizationType)) {
+			getOrganization.setOrganizationType(getOrganizationType);
+		}
+		
+		if (!Objects.equals(updatedData.countryCode(), getOrganization.getCountry())) {
+			getOrganization.setCountry(updatedData.countryCode());
+		}
+		
+		// TODO changing email needs verification feature
+		if (!Objects.equals(getOrganization.getEmail(), updatedData.email())) {
+			getOrganization.setEmail(updatedData.email());
+		}
+		
+		Set<Map<String, String>> addressDetails = addressHelper.jsonAddressStringToSetObject(
+				getOrganization.getAddress().get("address")
+				);
+				
+		if (!Objects.equals(updatedData.address(), addressDetails)) {
+			getOrganization.setAddress(
+					Map.of("address", addressHelper
+				.transformOrganizationAddressData(updatedData.address()).toString())
+					);
+		}
+		
+		if (!Objects.equals(updatedData.taxDetails(), getOrganization.getTaxDetails())) {
+			getOrganization.setTaxDetails(updatedData.taxDetails());
+		}
 		return null;
 	}
 	
