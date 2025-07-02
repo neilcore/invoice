@@ -7,24 +7,19 @@ import java.util.Set;
 
 import core.hubby.backend.core.dto.PhoneDetail;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 
-public record OrganizationVO (List<Details> organization, List<Map<String, String>> organizationTypes) {
-	public OrganizationVO {
-		if (organization.isEmpty()) {
-			throw new IllegalArgumentException("Organization cannot be empty");
-		}
-		
-		// CHANGE -> type of exception thrown  
-		if (organizationTypes.isEmpty()) {
-			throw new IllegalArgumentException("Organization types cannot be empty");
-		}
-	}
+public record OrganizationVO (
+	List<Details> organization,
+	@NotEmpty(message = "organizationTypes component cannot be empty")
+	List<Map<String, String>> organizationTypes
+) {	
 	
-	/*
-	 * Organization details 
-	 **/
+	/**
+	 * Nested record class for organization entity details
+	 */
 	public record Details(
 			Set<OrganizationUsers> users,
 			OrganizationName organizationName,
@@ -53,6 +48,9 @@ public record OrganizationVO (List<Details> organization, List<Map<String, Strin
 			}
 		}
 		
+		/**
+		 * Nested record class for organization entity name details
+		 */
 		public record OrganizationName (
 				@NotBlank(message = "name component cannot be blank")
 				String name,
@@ -60,13 +58,15 @@ public record OrganizationVO (List<Details> organization, List<Map<String, Strin
 				String legalName,
 				String tradingName,
 				@NotNull(message = "updatable component cannot be null")
-				Boolean updatable,
+				Boolean isUpdatable,
 				@PastOrPresent(message = "Invalid lastUpdated component value")
 				LocalDate lastUpdated
 				) {}
 	}
 	
-	// Nested record class >> TaxDetails
+	/**
+	 * Nested record class to hold organization tax details
+	 */
 	public record TaxDetails(String taxIdNo, String taxBasis, String taxPeriod) {
 		public TaxDetails {
 			if (taxIdNo.isBlank() || taxIdNo.isEmpty()) {
@@ -75,7 +75,9 @@ public record OrganizationVO (List<Details> organization, List<Map<String, Strin
 		}
 	}
 	
-	// Nested record class >> Organization users
+	/**
+	 * Nested record class to hold organization users
+	 */
 	public record OrganizationUsers(User user, String role, LocalDate userJoined) {
 		
 		public OrganizationUsers {
