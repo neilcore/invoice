@@ -53,10 +53,10 @@ public class OrganizationNameUpdate implements Serializable {
 	@DateTimeFormat(iso = ISO.DATE)
 	private LocalDate updatedDate;
 	
-	@Column(name = "organization_name_updatable", nullable = false)
+	@Column(name = "is_updatable", nullable = false)
 	@NotBlank(message = "organizationNameUpdatable")
 	@Builder.Default
-	private boolean organizationNameUpdatable = true;
+	private boolean isUpdatable = true;
 	
 	@Column(name = "note", nullable = false)
 	@Builder.Default

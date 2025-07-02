@@ -1,6 +1,9 @@
 package core.hubby.backend.business.services;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import core.hubby.backend.auth.util.CurrentUserUtil;
 import core.hubby.backend.business.dto.param.OrganizationDetailsDTO;
 import core.hubby.backend.business.dto.param.UpdateUserOrganizationInvitation;
@@ -25,7 +28,6 @@ import core.hubby.backend.core.helper.AddressHelper;
 import core.hubby.backend.core.helper.ContactNumberHelper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -36,7 +38,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Service("OrganizationService")
@@ -212,6 +213,7 @@ public class OrganizationService {
 	
 	public OrganizationVO getOrganization(Object org) {
 		OrganizationVO.Details organizationDetails = null;
+		OrganizationVO.Details.OrganizationName organizationName = null;
 		
 		if (org instanceof UUID organizationId) {
 			Organization findOrganization = organizationRepository.findOrganizationById(organizationId)
@@ -221,11 +223,11 @@ public class OrganizationService {
 			Set<PhoneDetail> phoneDetails = contactNumberHelper.mapPhoneJsonStringToPhoneDetailObject(
 					findOrganization.getPhoneNo()
 					);
+			organizationName = getOrganizationName(findOrganization);
 			
 			organizationDetails = new OrganizationVO.Details(
 					transformOrganizationUsers(findOrganization.getOrganizationUsers()),
-					findOrganization.getName(),
-					findOrganization.getLegalName(),
+					organizationName,
 					findOrganization.getCountry(),
 					findOrganization.getOrganizationType().getName(),
 					phoneDetails,
@@ -239,15 +241,21 @@ public class OrganizationService {
 					organizationObject.getOrganizationUsers()
 					);
 			
-			// Map Json phone details in string format to Set<PhoneDetail> format
+			/**
+			 * Map json phone details in string format to Set<PhoneDetail> format
+			 */
 			Set<PhoneDetail> phoneDetails = contactNumberHelper.mapPhoneJsonStringToPhoneDetailObject(
 					organizationObject.getPhoneNo()
 					);
 			
+			/**
+			 * Get Organization name details
+			 */
+			organizationName = getOrganizationName(organizationObject);
+			
 			organizationDetails = new OrganizationVO.Details(
 					organizationUsers,
-					organizationObject.getName(),
-					organizationObject.getLegalName(),
+					organizationName,
 					organizationObject.getCountry(),
 					organizationObject.getOrganizationType().getName(),
 					phoneDetails,
@@ -261,6 +269,25 @@ public class OrganizationService {
 		List<Map<String, String>> orgTypes = getOrganizationTypes();
 		
 		return new OrganizationVO(details, orgTypes);
+	}
+	
+	/**
+	 * This method will retrieve and format organization entity name
+	 * to OrganizationVO.Details.OrganizationName
+	 * @param obj -receives Organization entity object
+	 * @return - OrganizationVO.Details.OrganizationName object
+	 */
+	private OrganizationVO.Details.OrganizationName getOrganizationName(Organization obj) {
+		OrganizationVO.Details.OrganizationName organizationName =
+				new OrganizationVO.Details.OrganizationName(
+						obj.getName(),
+						obj.getLegalName(),
+						obj.getTradingName(),
+						obj.getOrganizationNameUpdate().isUpdatable(),
+						obj.getOrganizationNameUpdate().getUpdatedDate()
+				);
+		
+		return organizationName;
 	}
 	
 	/**
@@ -355,21 +382,21 @@ public class OrganizationService {
 		OrganizationNameUpdate organizationNameState = getOrganization.getOrganizationNameUpdate();
 		
 		if (!Objects.equals(getOrganization.getName(), updatedData.name())) {
-			if (organizationNameState.isOrganizationNameUpdatable()) {
+			if (organizationNameState.isUpdatable()) {
 				getOrganization.setName(updatedData.name());
 				organizationNameState.setUpdatedDate(LocalDate.now());
 			}
 		}
 		
 		if (!Objects.equals(getOrganization.getLegalName(), updatedData.legalName())) {
-			if (organizationNameState.isOrganizationNameUpdatable()) {
+			if (organizationNameState.isUpdatable()) {
 				getOrganization.setLegalName(updatedData.legalName());
 				organizationNameState.setUpdatedDate(LocalDate.now());
 			}
 		}
 		
 		if (!Objects.equals(getOrganization.getTradingName(), updatedData.tradingName())) {
-			if (organizationNameState.isOrganizationNameUpdatable()) {
+			if (organizationNameState.isUpdatable()) {
 				getOrganization.setTradingName(updatedData.tradingName());
 				organizationNameState.setUpdatedDate(LocalDate.now());
 			}
@@ -402,6 +429,33 @@ public class OrganizationService {
 		
 		if (!Objects.equals(updatedData.taxDetails(), getOrganization.getTaxDetails())) {
 			getOrganization.setTaxDetails(updatedData.taxDetails());
+		}
+		
+		/**
+		 * The following code is for the payment terms.
+		 * The updated payment term details must be validated first
+		 * while the entity's payment terms json (in string format)
+		 * is converted back to Map<String, BillAndSalesPaymentTermElement> format
+		 */
+		ObjectMapper objectMapper = new ObjectMapper();
+		
+		Map<String, BillAndSalesPaymentTermElement> updatedPaymentTermsData =
+				validatePaymentTerms(updatedData.paymentTerms()); // validate updated payment terms details
+		
+		Map<String, BillAndSalesPaymentTermElement> jsonStringPaymentTerms = null;
+		
+		try {
+			jsonStringPaymentTerms = objectMapper.readValue(
+					getOrganization.getPaymentTerms()
+					.get("paymentTerms"),
+					new TypeReference<Map<String, BillAndSalesPaymentTermElement>>() {}
+			);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		if (!Objects.equals(jsonStringPaymentTerms, updatedPaymentTermsData)) {
+			getOrganization.setPaymentTerms(Map.of("paymentTerms", Set.of(updatedPaymentTermsData).toString()));
 		}
 		return null;
 	}

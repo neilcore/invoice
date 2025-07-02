@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.Set;
 
 import core.hubby.backend.core.dto.PhoneDetail;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 
 public record OrganizationVO (List<Details> organization, List<Map<String, String>> organizationTypes) {
 	public OrganizationVO {
@@ -24,8 +27,7 @@ public record OrganizationVO (List<Details> organization, List<Map<String, Strin
 	 **/
 	public record Details(
 			Set<OrganizationUsers> users,
-			String name,
-			String legalName,
+			OrganizationName organizationName,
 			String country,
 			String organizationType,
 			Set<PhoneDetail> phoneNo,
@@ -36,12 +38,6 @@ public record OrganizationVO (List<Details> organization, List<Map<String, Strin
 		public Details {
 			if (users.isEmpty()) {
 				throw new IllegalArgumentException("Organization users cannot be null");
-			}
-			if (name == null || name.isBlank()) {
-				throw new IllegalArgumentException("Name is mandatory");
-			}
-			if (legalName == null || legalName.isBlank()) {
-				throw new IllegalArgumentException("Legal name is mandatory");
 			}
 			if (country == null || country.isBlank()) {
 				throw new IllegalArgumentException("Country is mandatory");
@@ -56,6 +52,18 @@ public record OrganizationVO (List<Details> organization, List<Map<String, Strin
 				throw new IllegalArgumentException("Email is mandatory");
 			}
 		}
+		
+		public record OrganizationName (
+				@NotBlank(message = "name component cannot be blank")
+				String name,
+				@NotBlank(message = "legalName component cannot be blank")
+				String legalName,
+				String tradingName,
+				@NotNull(message = "updatable component cannot be null")
+				Boolean updatable,
+				@PastOrPresent(message = "Invalid lastUpdated component value")
+				LocalDate lastUpdated
+				) {}
 	}
 	
 	// Nested record class >> TaxDetails
