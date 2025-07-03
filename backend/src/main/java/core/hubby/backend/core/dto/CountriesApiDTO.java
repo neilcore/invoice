@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public record CountriesApiHelper(
+public record CountriesApiDTO(
 		@NotNull(message = "name component cannot be null.")
 		CountryName name,
 		@Size(min = 2, max = 2)
