@@ -15,8 +15,10 @@ import lombok.RequiredArgsConstructor;
 public class CountriesApiHelper {
 	@Value("${spring.app.details.api.website}")
 	private String REST_COUNTRIES_BASE_URL;
-	private static final RestClient restClient = RestClient.create();
 	
+	private static final RestClient restClient = RestClient.create();
+	private static final Map<String, String> fieldQueryParameter =
+			Map.of("CountryName", "name", "TwoLetterCountryCode", "cca2");
 	/**
 	 * @GET request for https://restcountries.com/v3.1/all
 	 * query parameters include:
@@ -28,7 +30,13 @@ public class CountriesApiHelper {
 				.uri(
 						uriBuilder -> uriBuilder
 						.path(REST_COUNTRIES_BASE_URL + "/all")
-						.queryParam("fields", List.of("name,cca2"))
+						.queryParam(
+								"fields",
+								List.of(
+										fieldQueryParameter.get("CountryName"),
+										fieldQueryParameter.get("TwoLetterCountryCode")
+								)
+						)
 						.build()
 				)
 				.header("Content-Type", "application/json")
@@ -45,7 +53,7 @@ public class CountriesApiHelper {
 	 */
 	public Set<Map<String, String>> getTwoLetterCountryCode() {
 		return restClient.get()
-				.uri(REST_COUNTRIES_BASE_URL + "/all?fields=cca2")
+				.uri(REST_COUNTRIES_BASE_URL + "/all?fields=" + fieldQueryParameter.get("TwoLetterCountryCode"))
 				.retrieve()
 				.body(new ParameterizedTypeReference<Set<Map<String, String>>>() {});
 	}
