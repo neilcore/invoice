@@ -28,7 +28,7 @@ public class OrganizationController {
 	
 	@PostMapping("create")
 	public ResponseEntity<OrganizationVO> createOrganization(@RequestBody @Valid OrganizationDetailsDTO data) {
-		return ResponseEntity.ok(organizationService.createOrganization(data));
+		return ResponseEntity.ok(organizationService.create(data));
 	}
 	
 	/**

@@ -70,21 +70,36 @@ public class OrganizationService {
 		paymentTermsElements.add(OrganizationRepository.PAYMENT_TERMS_SALES);
 	}
 	
+	/**
+	 * This method will create new organization entity
+	 * @param - {@linkplain OrganizationDetailsDTO} object type of data
+	 * @return - {@linkplain OrganizationVO} object type of data
+	 */
 	@Transactional
-	public OrganizationVO createOrganization(OrganizationDetailsDTO data) {
+	public OrganizationVO create(OrganizationDetailsDTO data) {
 		
-		// Add current authenticated user as the organization's subscriber
+		/**
+		 * Add authenticated user as the organization's
+		 * subscriber.
+		 */
 		OrganizationUsers subscriber = OrganizationUsers.builder()
 				.userId(authenticatedUser)
 				.userRole(Roles.SUBSCRIBER.toString())
 				.build();
-		// Create organization user
+		
+		/**
+		 * Create organization user
+		 */
 		Set<OrganizationUsers> organizationUsers = Set.of(subscriber);
 		
-		// Validate payment terms keys
+		/**
+		 * Validate payment terms keys
+		 */
 		Map<String, BillAndSalesPaymentTermElement> paymentTerms = validatePaymentTerms(data.paymentTerms());
 		
-		// Check if there are invites
+		/**
+		 * Check if there are invites
+		 */
 		Set<OrganizationUserInvites> userInvites = new HashSet<>();
 		if (!data.inviteOtherUser().isEmpty()) {
 			
@@ -109,7 +124,9 @@ public class OrganizationService {
 			}
 		}
 		
-		// Transform organization address data to fit the internal models
+		/**
+		 * Transform organization address data to fit the internal models
+		 */
 		Set<Map<String, String>> transformedAddress = addressHelper
 				.transformOrganizationAddressData(data.address());
 		
@@ -219,7 +236,9 @@ public class OrganizationService {
 			Organization findOrganization = organizationRepository.findOrganizationById(organizationId)
 					.orElseThrow(() -> new IllegalArgumentException("Organization entity cannot be found."));
 			
-			// Map Json phone details in string format to Set<PhoneDetail> format
+			/**
+			 * Map Json phone details in string format to Set<PhoneDetail> format
+			 */
 			Set<PhoneDetail> phoneDetails = contactNumberHelper.mapPhoneJsonStringToPhoneDetailObject(
 					findOrganization.getPhoneNo()
 					);
@@ -345,7 +364,9 @@ public class OrganizationService {
 	}
 	
 	public FinancialSettings createFinancialSetting(OrganizationDetailsDTO.AddFinancialSetting financial) {
-		// Get currency type
+		/**
+		 * Get currency type
+		 */
 		String currency = "";
 		switch (financial.defaultCurrency()) {
 		case OrganizationRepository.CURRENCY_BRAZIL -> currency = OrganizationRepository.CURRENCY_BRAZIL;
@@ -368,39 +389,36 @@ public class OrganizationService {
 	}
 	
 	/**
-	 * This method is used to updated an organization entity
-	 * organization names (name, legalName, tradingName) are only Updatable
+	 * This method is used to update an organization entity
+	 * organization names (name, legalName, tradingName) are only changeable
 	 * once every 20 days
 	 * TODO work with updateOrganization service method
-	 * @param organizationId
-	 * @param updatedData
-	 * @return
+	 * @param organizationId - {@linkplain java.util.UUID} type 
+	 * @param updatedData - {@linkplain OrganizationDetailsDTO} object type of data
+	 * @return - {@linkplain OrganizationVO} object type of data
 	 */
-	public OrganizationVO updateOrganization(UUID organizationId, OrganizationDetailsDTO updatedData) {
+	public OrganizationVO update(UUID organizationId, OrganizationDetailsDTO updatedData) {
 		Organization getOrganization = organizationRepository.findById(organizationId)
 				.orElseThrow(() -> new IllegalArgumentException("Organization object cannot be found."));
 		OrganizationNameUpdate organizationNameState = getOrganization.getOrganizationNameUpdate();
 		
 		/**
 		 * The following three conditions for fields: name, legalName, and TradingName
-		 * are only updatable once for every 20 days
+		 * are only changeable once for every 20 days
 		 */
-		if (!Objects.equals(getOrganization.getName(), updatedData.name())) {
-			if (organizationNameState.isUpdatable()) {
+		boolean isOrganizationNameUpdatable = organizationNameState.isUpdatable();
+		if (isOrganizationNameUpdatable) {
+			if (!Objects.equals(getOrganization.getName(), updatedData.name())) {
 				getOrganization.setName(updatedData.name());
 				organizationNameState.setUpdatedDate(LocalDate.now());
 			}
-		}
-		
-		if (!Objects.equals(getOrganization.getLegalName(), updatedData.legalName())) {
-			if (organizationNameState.isUpdatable()) {
+			
+			if (!Objects.equals(getOrganization.getLegalName(), updatedData.legalName())) {
 				getOrganization.setLegalName(updatedData.legalName());
 				organizationNameState.setUpdatedDate(LocalDate.now());
 			}
-		}
-		
-		if (!Objects.equals(getOrganization.getTradingName(), updatedData.tradingName())) {
-			if (organizationNameState.isUpdatable()) {
+			
+			if (!Objects.equals(getOrganization.getTradingName(), updatedData.tradingName())) {
 				getOrganization.setTradingName(updatedData.tradingName());
 				organizationNameState.setUpdatedDate(LocalDate.now());
 			}
@@ -438,7 +456,7 @@ public class OrganizationService {
 		/**
 		 * The following code is for the payment terms.
 		 * The updated payment term details must be validated first
-		 * while the entity's payment terms json (in string format)
+		 * while the entity's payment terms JSON (in string format)
 		 * is converted back to Map<String, BillAndSalesPaymentTermElement> format
 		 */
 		ObjectMapper objectMapper = new ObjectMapper();
