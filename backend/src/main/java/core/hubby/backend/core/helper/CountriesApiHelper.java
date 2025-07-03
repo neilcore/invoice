@@ -1,6 +1,4 @@
 package core.hubby.backend.core.helper;
-
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -10,43 +8,45 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import lombok.RequiredArgsConstructor;
 
-// TODO work and improve this countries API and TEST
 @Component
+@RequiredArgsConstructor
 public class CountriesApiHelper {
 	@Value("${spring.app.details.api.website}")
 	private String REST_COUNTRIES_BASE_URL;
-	private final RestClient restClient;
-	private String field;
-	private String uri;
+	private static final RestClient restClient = RestClient.create();
 	
-	// TODO fix CountriesApiHelper constructor
-	public CountriesApiHelper(RestClient.Builder clientBuilder, String field, String uri) {
-		this.field = field;
-		this.uri = uri;
-		this.restClient = clientBuilder
-				.baseUrl(URI.create(REST_COUNTRIES_BASE_URL))
-				.defaultUriVariables(Map.of("fields", this.field))
-				.build();
-	}
-	
-	// Format countries
-	public List<JsonNode> formatCountries() {
-		List<JsonNode> countries = restClient.get()
-				.uri(URI.create(this.uri))
+	/**
+	 * @GET request for https://restcountries.com/v3.1/all
+	 * query parameters include:
+	 * 	name and cca2
+	 * @return
+	 */
+	public List<CountriesApiHelper> formatCountries() {
+		List<CountriesApiHelper> countries = restClient.get()
+				.uri(
+						uriBuilder -> uriBuilder
+						.path(REST_COUNTRIES_BASE_URL + "/all")
+						.queryParam("fields", List.of("name,cca2"))
+						.build()
+				)
+				.header("Content-Type", "application/json")
 				.retrieve()
-				.body(new ParameterizedTypeReference<List<JsonNode>>() {});
+				.body(new ParameterizedTypeReference<List<CountriesApiHelper>>() {});
 				
 		System.out.println("Countries: " + countries);
 		return countries;
 	}
 	
-	// Get the two letter country code
-	public Set<String> getTwoLetterCountryCode() {
+	/**
+	 * @GET request for 2 letter country code
+	 * @return
+	 */
+	public Set<Map<String, String>> getTwoLetterCountryCode() {
 		return restClient.get()
-				.uri(URI.create(this.uri))
+				.uri(REST_COUNTRIES_BASE_URL + "/all?fields=cca2")
 				.retrieve()
-				.body(new ParameterizedTypeReference<Set<String>>() {});
+				.body(new ParameterizedTypeReference<Set<Map<String, String>>>() {});
 	}
 }
