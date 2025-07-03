@@ -381,6 +381,10 @@ public class OrganizationService {
 				.orElseThrow(() -> new IllegalArgumentException("Organization object cannot be found."));
 		OrganizationNameUpdate organizationNameState = getOrganization.getOrganizationNameUpdate();
 		
+		/**
+		 * The following three conditions for fields: name, legalName, and TradingName
+		 * are only updatable once for every 20 days
+		 */
 		if (!Objects.equals(getOrganization.getName(), updatedData.name())) {
 			if (organizationNameState.isUpdatable()) {
 				getOrganization.setName(updatedData.name());
