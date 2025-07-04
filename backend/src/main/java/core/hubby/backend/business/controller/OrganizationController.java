@@ -12,22 +12,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import core.hubby.backend.business.dto.param.OrganizationDetailsDTO;
+import core.hubby.backend.business.dto.param.OrganizationCreateRequest;
 import core.hubby.backend.business.dto.param.UpdateUserOrganizationInvitation;
 import core.hubby.backend.business.dto.vo.OrganizationElementVO;
-import core.hubby.backend.business.dto.vo.OrganizationVO;
+import core.hubby.backend.business.dto.vo.OrganizationDetailsResponse;
 import core.hubby.backend.business.services.OrganizationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("api/v1/organization/")
+@RequestMapping("api/v1/business/organization/")
 @RequiredArgsConstructor
 public class OrganizationController {
 	private final OrganizationService organizationService;
 	
 	@PostMapping("create")
-	public ResponseEntity<OrganizationVO> createOrganization(@RequestBody @Valid OrganizationDetailsDTO data) {
+	public ResponseEntity<OrganizationDetailsResponse> createOrganization(@RequestBody @Valid OrganizationCreateRequest data) {
 		return ResponseEntity.ok(organizationService.create(data));
 	}
 	
@@ -39,16 +39,16 @@ public class OrganizationController {
 	 * @return
 	 */
 	@PutMapping("update/{id}")
-	public ResponseEntity<OrganizationVO> updateOrganization(
+	public ResponseEntity<OrganizationDetailsResponse> updateOrganization(
 			@PathVariable("id") UUID id,
-			@Valid @RequestBody OrganizationDetailsDTO data
+			@Valid @RequestBody OrganizationCreateRequest data
 	) {
 		return null;
 	}
 	
 	@GetMapping("{id}")
-	public ResponseEntity<OrganizationVO> getOrganization(@PathVariable(required = true) UUID id) {
-		return ResponseEntity.ok(organizationService.getOrganization(id));
+	public ResponseEntity<OrganizationDetailsResponse> getOrganization(@PathVariable(required = true) UUID id) {
+		return ResponseEntity.ok(organizationService.retrieveOrganizationById(id));
 	}
 	
 	// Get Organization Elements
@@ -68,7 +68,6 @@ public class OrganizationController {
 			@PathVariable("id") UUID id,
 			@Valid @RequestBody UpdateUserOrganizationInvitation data
 	) {
-		organizationService.updateUserOrganizationInvitation(id, data);
 		return null;
 	}
 	

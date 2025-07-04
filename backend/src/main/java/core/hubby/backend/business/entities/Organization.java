@@ -1,7 +1,6 @@
 package core.hubby.backend.business.entities;
 
 import java.io.Serializable;
-import java.security.PrivateKey;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -12,7 +11,6 @@ import org.hibernate.type.SqlTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 
 import core.hubby.backend.business.entities.embedded.ExternalLinks;
-import core.hubby.backend.business.entities.embedded.FinancialSettings;
 import core.hubby.backend.business.entities.embedded.OrganizationUserInvites;
 import core.hubby.backend.business.entities.embedded.OrganizationUsers;
 import core.hubby.backend.business.entities.embedded.TaxDetails;
@@ -81,18 +79,24 @@ public class Organization implements Serializable {
 			joinColumns = {@JoinColumn(name = " organization_id", referencedColumnName = "id", nullable = false)})
 	private Set<OrganizationUserInvites> organizationUserInvites;
 	
-	@Column(nullable = false)
-	@NotBlank(message = "Name is mandatory")
-	private String name;
+	// TODO rename column "name" to "display_name"
+	@Column(name = "display_name", nullable = false)
+	@NotBlank(message = "displayName cannot be blank.")
+	private String displayName;
 	
-	// The official legal name of the business
+	// The official legal name or trading name of the business
 	@Column(name = "legal_name", nullable = false, unique = true)
-	@NotBlank(message = "Legal name is mandatory")
+	@NotBlank(message = "legalName cannot be blank.")
 	private String legalName;
 	
+	// TODO remove trading_name column for organization
 	// Optional: The name the business trades under, if different from legal name
 	@Column(name = "trading_name")
 	private String tradingName;
+	
+	// TODO create organization_description column migration script
+	@Column(name = "organization_description")
+	private String organizationDescription;
 	
 	// e.g., "US", "AU", "NZ", "GB"
 	@Column(nullable = false)
@@ -127,13 +131,20 @@ public class Organization implements Serializable {
 	})
 	private TaxDetails taxDetails;
 	
-	@ToString.Exclude
-	@Embedded
-	@AttributeOverrides({
-		@AttributeOverride(name = "defaultCurrency", column = @Column(name = "default_currency", nullable = false)),
-		@AttributeOverride(name = "timeZone", column = @Column(name = "time_zone", nullable = false))
-	})
-	private FinancialSettings financialSettings;
+	@NotBlank(message = "Default currency is mandatory")
+	@Column(name = "default_currency", nullable = false)
+	private String defaultCurrency;
+	
+	@NotBlank(message = "Default tax basis is mandatory")
+	@Column(name = "time_zone", nullable = false)
+	private String timeZone;
+	
+	/**
+	 * TODO create a migration script for this
+	 */
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(name = "financial_year")
+	private Map<String, Integer> financialYear;
 	
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Type(JsonType.class)

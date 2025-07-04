@@ -90,19 +90,19 @@ public class ContactNumberHelper {
 	
 	/**
 	 * TODO learn about Jackson's TypeReference
-	 * This method will map json in string format to
-	 * Set<PhoneDetail> format.
-	 * @param phonesJsonString - Map type that contains a single node called "phones"
-	 * @return - will return a Set<PhoneDetail> object
+	 * This method will map JSON in string format to
+	 * {@linkplain java.util.LinkedHashSet} that contains {@linkplain PhoneDetail} objects.
+	 * @param jsonStr - {@linkplain java.util.Map} type that contains a single node called "phones".
+	 * @return - {@linkplain java.util.LinkedHashSet} that contains {@linkplain PhoneDetail} objects.
 	 */
-	public Set<PhoneDetail> mapPhoneJsonStringToPhoneDetailObject(Map<String, String> phonesJsonString) {
-		Set<PhoneDetail> phoneDetails = null;
-		String phoneSetStringJson = phonesJsonString.get("phones");
+	public LinkedHashSet<PhoneDetail> fromJsonStringToObject(Map<String, String> jsonStr) {
+		LinkedHashSet<PhoneDetail> phoneDetails = null;
+		String phoneSetStringJson = jsonStr.get("phones");
 		
 		try {
 			phoneDetails = objectMapper.readValue(
 					phoneSetStringJson,
-					new TypeReference<Set<PhoneDetail>>() {}
+					new TypeReference<LinkedHashSet<PhoneDetail>>() {}
 			);
 		} catch (Exception e) {
 			e.printStackTrace();

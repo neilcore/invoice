@@ -7,18 +7,18 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import core.hubby.backend.business.entities.User;
-import core.hubby.backend.business.repositories.UserRepository;
+import core.hubby.backend.business.entities.UserAccount;
+import core.hubby.backend.business.repositories.UserAccountRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
-	private final UserRepository userRepository; 
+	private final UserAccountRepository userRepository; 
 	
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<User> findUserByEmail = userRepository.findUserByEmailIgnoreCase(username);
+        Optional<UserAccount> findUserByEmail = userRepository.findUserByEmailIgnoreCase(username);
         if (findUserByEmail.isPresent()) {
             return findUserByEmail.get();
         } else {

@@ -4,7 +4,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import core.hubby.backend.business.entities.User;
+import core.hubby.backend.business.entities.UserAccount;
 
 public class CurrentUserUtil {
 	private static final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -14,7 +14,7 @@ public class CurrentUserUtil {
         if (isAuthenticated()) {
             Object principal = authentication.getPrincipal();
 
-            if (principal instanceof User getUser) {
+            if (principal instanceof UserAccount getUser) {
                 return getUser.getEmail();
             } else {
                 return principal.toString();

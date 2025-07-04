@@ -6,15 +6,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import core.hubby.backend.business.entities.User;
+import core.hubby.backend.business.entities.UserAccount;
 import core.hubby.backend.business.enums.Roles;
-import core.hubby.backend.business.repositories.UserRepository;
+import core.hubby.backend.business.repositories.UserAccountRepository;
 
 public class DefaultUserInitializer implements CommandLineRunner {
-	private final UserRepository userRepository;
+	private final UserAccountRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
 	
-	public DefaultUserInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+	public DefaultUserInitializer(UserAccountRepository userRepository, PasswordEncoder passwordEncoder) {
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
 	}
@@ -33,9 +33,9 @@ public class DefaultUserInitializer implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 		/* This will create the default user */
-		Optional<User> existingEmailOptional = userRepository.findUserByEmailIgnoreCase(defaultEmail);
+		Optional<UserAccount> existingEmailOptional = userRepository.findUserByEmailIgnoreCase(defaultEmail);
 		if (!existingEmailOptional.isPresent()) {
-			User defaultUser = new User();
+			UserAccount defaultUser = new UserAccount();
 			defaultUser.setEmail(defaultEmail);
 			defaultUser.setFirstName(defaultFirstName);
 			defaultUser.setLastName(defaultLastName);

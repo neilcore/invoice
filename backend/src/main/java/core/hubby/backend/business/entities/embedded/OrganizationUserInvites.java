@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
-import core.hubby.backend.business.entities.User;
+import core.hubby.backend.business.entities.UserAccount;
 import core.hubby.backend.business.repositories.OrganizationRepository;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -32,12 +32,12 @@ public class OrganizationUserInvites {
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "invitation_for", nullable = false)
 	@NotNull(message = "InvitationFor field cannot be null.")
-	private User invitationFor;
+	private UserAccount invitationFor;
 	
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "invitation_by", nullable = false)
 	@NotNull(message = "InvitationBy field cannot be null.")
-	private User invitationBy;
+	private UserAccount invitationBy;
 	
 	@Column(name = "invitation_role", nullable = false)
 	@NotBlank(message = "invitationRole field cannot be null")

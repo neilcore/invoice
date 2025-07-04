@@ -76,12 +76,12 @@ public class AddressHelper {
     }
     
     /**
-     * This method will transform a json address string format
-     * to Set<Map<String, String>> object type
+     * This method will transform a JSON address string format
+     * to {@linkplain java.util.Set} that contains {@linkplain java.util.Map} objects.
      * @param address
-     * @return
+     * @return - {@linkplain java.util.Set} that contains {@linkplain java.util.Map} objects.
      */
-    public Set<Map<String, String>> jsonAddressStringToSetObject(String address) {
+    public Set<Map<String, String>> jsonAddressStringToSetObj(String address) {
     	Set<Map<String, String>> addressDetail = null;
     	
 		try {

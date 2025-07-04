@@ -5,7 +5,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import core.hubby.backend.business.entities.User;
+import core.hubby.backend.business.entities.UserAccount;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -26,9 +26,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrganizationUsers {	
-	@ManyToOne(targetEntity = User.class, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@ManyToOne(targetEntity = UserAccount.class, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	@JoinColumn(name = "user_id", nullable = false, unique = true)
-	private User userId;
+	private UserAccount userId;
 	
 	@NotBlank(message = "User role cannot be blank")
 	@Column(name = "user_role", nullable = false)

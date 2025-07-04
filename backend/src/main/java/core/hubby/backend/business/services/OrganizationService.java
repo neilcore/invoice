@@ -1,40 +1,23 @@
 package core.hubby.backend.business.services;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import core.hubby.backend.auth.util.CurrentUserUtil;
-import core.hubby.backend.business.dto.param.OrganizationDetailsDTO;
-import core.hubby.backend.business.dto.param.UpdateUserOrganizationInvitation;
-import core.hubby.backend.business.dto.vo.OrganizationVO;
+import core.hubby.backend.business.dto.param.OrganizationCreateRequest;
+import core.hubby.backend.business.dto.vo.OrganizationDetailsResponse;
 import core.hubby.backend.business.entities.Organization;
-import core.hubby.backend.business.entities.OrganizationNameUpdate;
 import core.hubby.backend.business.entities.OrganizationType;
-import core.hubby.backend.business.entities.User;
-import core.hubby.backend.business.entities.embedded.AddressDetails;
-import core.hubby.backend.business.entities.embedded.BillAndSalesPaymentTermElement;
-import core.hubby.backend.business.entities.embedded.FinancialSettings;
 import core.hubby.backend.business.entities.embedded.OrganizationUserInvites;
 import core.hubby.backend.business.entities.embedded.OrganizationUsers;
-import core.hubby.backend.business.entities.embedded.TaxDetails;
-import core.hubby.backend.business.enums.Roles;
 import core.hubby.backend.business.repositories.OrganizationRepository;
 import core.hubby.backend.business.repositories.OrganizationTypeRepository;
-import core.hubby.backend.business.repositories.PaymentTermsRepository;
-import core.hubby.backend.business.repositories.UserRepository;
+import core.hubby.backend.business.repositories.UserAccountRepository;
 import core.hubby.backend.core.dto.PhoneDetail;
 import core.hubby.backend.core.helper.AddressHelper;
 import core.hubby.backend.core.helper.ContactNumberHelper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-
-import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -47,171 +30,92 @@ public class OrganizationService {
 	private static final Set<String> paymentTermsElements = new HashSet<>();
 	
 	private final OrganizationRepository organizationRepository;
-	private final PaymentTermsRepository paymentTermsRepository;
-	private final UserRepository userRepository;
+	private final UserAccountRepository userRepository;
 	private final OrganizationTypeRepository organizationTypeRepository;
 	private final ContactNumberHelper contactNumberHelper;
 	private final AddressHelper addressHelper;
-	
-	/**
-	 * This will hold the current authenticated user
-	 */
-	private final User authenticatedUser = (User) CurrentUserUtil.getCurrentUserDetails();
+	private final UserAccountService userAccountService;
 	
 	static {
-		// Add values to external links
+		/**
+		 * Add values to externalLinks
+		 */
 		externalLinks.add(OrganizationRepository.EXTERNAL_LINK_FACEBOOK);
 		externalLinks.add(OrganizationRepository.EXTERNAL_LINK_TIKTOK);
 		externalLinks.add(OrganizationRepository.EXTERNAL_LINK_INSTAGRAM);
 		externalLinks.add(OrganizationRepository.EXTERNAL_LINK_WEBSITE);
 		
-		// Add values to paymentTermsElements
+		/**
+		 * paymentTermsElements
+		 */
 		paymentTermsElements.add(OrganizationRepository.PAYMENT_TERMS_BILLS);
 		paymentTermsElements.add(OrganizationRepository.PAYMENT_TERMS_SALES);
 	}
 	
 	/**
 	 * This method will create new organization entity
-	 * @param - {@linkplain OrganizationDetailsDTO} object type of data
-	 * @return - {@linkplain OrganizationVO} object type of data
+	 * @param - {@linkplain OrganizationCreateRequest} object type of data
+	 * @return - {@linkplain OrganizationDetailsResponse} object type of data
 	 */
 	@Transactional
-	public OrganizationVO create(OrganizationDetailsDTO data) {
-		
+	public OrganizationDetailsResponse create(OrganizationCreateRequest data) {
 		/**
-		 * Add authenticated user as the organization's
-		 * subscriber.
+		 * Set the subscriber as the first organization user
 		 */
-		OrganizationUsers subscriber = OrganizationUsers.builder()
-				.userId(authenticatedUser)
-				.userRole(Roles.SUBSCRIBER.toString())
-				.build();
-		
-		/**
-		 * Create organization user
-		 */
-		Set<OrganizationUsers> organizationUsers = Set.of(subscriber);
-		
-		/**
-		 * Validate payment terms keys
-		 */
-		Map<String, BillAndSalesPaymentTermElement> paymentTerms = validatePaymentTerms(data.paymentTerms());
+		Set<OrganizationUsers> organizationUsers = Set.of(userAccountService.addSubscriber());
 		
 		/**
 		 * Check if there are invites
 		 */
-		Set<OrganizationUserInvites> userInvites = new HashSet<>();
-		if (!data.inviteOtherUser().isEmpty()) {
-			
-			Set<UUID> userId = data.inviteOtherUser().stream().map(id -> id.userId())
-					.collect(Collectors.toSet());
-			
-			if (userRepository.checkIfUsersExists(userId)) {
-				for(OrganizationDetailsDTO.InviteUser user: data.inviteOtherUser()) {
-					Optional<User> getUser = userRepository.findById(user.userId());
-					String userRole = user.role().toUpperCase() == Roles.READ_ONLY.toString() ?
-							Roles.READ_ONLY.toString() : user.role().toUpperCase() == Roles.STANDARD.toString()
-							? Roles.STANDARD.toString() : Roles.INVOICE_ONLY.toString();
-					
-					userInvites.add(
-							OrganizationUserInvites.builder()
-							.invitationBy(authenticatedUser)
-							.invitationFor(getUser.get())
-							.invitationRole(userRole)
-							.build()
-					);
-				}
-			}
-		}
+		Set<OrganizationUserInvites> userInvites = userAccountService.addInvitedUsers(data.inviteOtherUser());
 		
 		/**
 		 * Transform organization address data to fit the internal models
 		 */
 		Set<Map<String, String>> transformedAddress = addressHelper
-				.transformOrganizationAddressData(data.address());
+				.transformOrganizationAddressData(data.contactDetails().address());
+		
+		String getPhoneDetails = 
+				contactNumberHelper.parsePhoneNumbers(data.contactDetails().phoneNo());
 		
 		Organization newOrganization = Organization.builder()
 				.organizationUsers(organizationUsers)
 				.organizationUserInvites(userInvites)
-				.name(data.name())
-				.legalName(data.legalName())
-				.tradingName(data.tradingName())
-				.country(data.countryCode())
-				.organizationType(getOrganizationType(data.organizationType()))
-				.phoneNo(Map.of("phones", contactNumberHelper.parsePhoneNumbers(data.phoneNo())))
-				.email(data.email())
+				.displayName(data.basicInformation().displayName())
+				.legalName(data.basicInformation().legalName())
+				.organizationDescription(data.basicInformation().organizationDescription())
+				.organizationType(getOrganizationType(data.basicInformation().organizationType()))
+				.country(data.contactDetails().countryCode())
+				.phoneNo(Map.of("phones", getPhoneDetails))
+				.email(data.contactDetails().email())
+				.website(data.contactDetails().website())
 				.address(Map.of("address", transformedAddress.toString()))
-				.taxDetails(data.taxDetails())
-				.financialSettings(createFinancialSetting(data.financialSettings()))
 				.externalLinks(
-						data.externalLinks().stream()
+						data.contactDetails().externalLinks().stream()
 						.filter(lkFilter ->
 						externalLinks.contains(lkFilter.getLinkType().toLowerCase())
 						).collect(Collectors.toSet())
 				)
-				.paymentTerms(Map.of("paymentTerms", Set.of(paymentTerms).toString()))
 				.build();
 		
 		Organization org = organizationRepository.save(newOrganization);
-		return getOrganization(org);
+		return mapOrganizationDetails(org);
 		
 	}
 	
 	/**
-	 * This method will validated payment terms data.
-	 * This will check every given entry key if it is a valid
-	 * payment terms key by checking if the key exists in paymentTermsElements set.
-	 * @param data - of type Map<String, BillAndSalesPaymentTermElement>
-	 * @return - Map<String, BillAndSalesPaymentTermElement> object type
+	 * This method will check existing organization entity by {@linkplain java.util.UUID} id
+	 * @param id - accepts {@linkplain java.util.UUID} type of ID
+	 * @return - returns {@linkplain OrganizationDetailsResponse} object type.
 	 */
-	private Map<String, BillAndSalesPaymentTermElement> validatePaymentTerms(
-			Map<String, BillAndSalesPaymentTermElement> data
-	) {
-		List<String> paymentTermLists = paymentTermsRepository.findAll().stream()
-				.map(trms -> trms.getName())
-				.toList();
+	public OrganizationDetailsResponse retrieveOrganizationById(UUID id) {
+		Optional<Organization> getOrganization = organizationRepository
+				.findById(id);
 		
-		/**
-		 * This is check if the map keys follow the proper
-		 * naming conventions.
-		 * @throw IllegalArgumentException - if found
-		 * any violations.
-		 */
-		data.keySet().forEach(
-				ky -> {
-					if (!ky.matches("^[A-Z]+$")) {
-						throw new IllegalArgumentException("Unknown key name: " + ky);
-					}
-				}
-		);
-		
-		/**
-		 * This will retain payment terms values that are only
-		 * contained in the specified collections (paymentTermLists).
-		 * this will remove elements that are not contained in the 
-		 * specified collections
-		 */
-		List<String> paymentTermsValues = data.values().stream()
-				.map(pymt -> pymt.getPaymentTerm())
-				.toList();
-		
-		Map<String, BillAndSalesPaymentTermElement> paymentTerms = new HashMap<>();
-		if (!paymentTermLists.containsAll(paymentTermsValues)) {
-			
-			throw new IllegalArgumentException("Unknown payment term values.");
-			
-		} else {
-			
-			for (Map.Entry<String, BillAndSalesPaymentTermElement> entry: data.entrySet()) {
-				paymentTerms.put(entry.getKey().toUpperCase(), entry.getValue());
-			}
+		if(getOrganization.isEmpty()) {
+			throw new IllegalArgumentException("Organization entity not found.");
 		}
-		
-		return paymentTerms;
-	}
-	
-	public OrganizationVO.TaxDetails generateTaxDetails(TaxDetails details) {
-		return new OrganizationVO.TaxDetails(details.getTaxIdNo(), details.getTaxBasis(), details.getTaxPeriod());
+		return mapOrganizationDetails(getOrganization.get());
 	}
 	
 	/**
@@ -228,281 +132,67 @@ public class OrganizationService {
 		return getOrganizationType.get();
 	}
 	
-	public OrganizationVO getOrganization(Object org) {
-		OrganizationVO.Details organizationDetails = null;
-		OrganizationVO.Details.OrganizationName organizationName = null;
-		
-		if (org instanceof UUID organizationId) {
-			Organization findOrganization = organizationRepository.findOrganizationById(organizationId)
-					.orElseThrow(() -> new IllegalArgumentException("Organization entity cannot be found."));
-			
-			/**
-			 * Map Json phone details in string format to Set<PhoneDetail> format
-			 */
-			Set<PhoneDetail> phoneDetails = contactNumberHelper.mapPhoneJsonStringToPhoneDetailObject(
-					findOrganization.getPhoneNo()
-					);
-			organizationName = getOrganizationName(findOrganization);
-			
-			organizationDetails = new OrganizationVO.Details(
-					transformOrganizationUsers(findOrganization.getOrganizationUsers()),
-					organizationName,
-					findOrganization.getCountry(),
-					findOrganization.getOrganizationType().getName(),
-					phoneDetails,
-					findOrganization.getEmail(),
-					findOrganization.getWebsite(),
-					generateTaxDetails(findOrganization.getTaxDetails())
-			);
-		} else if (org instanceof Organization organizationObject) {			
-			// Get organization users
-			Set<OrganizationVO.OrganizationUsers> organizationUsers = transformOrganizationUsers(
-					organizationObject.getOrganizationUsers()
-					);
-			
-			/**
-			 * Map json phone details in string format to Set<PhoneDetail> format
-			 */
-			Set<PhoneDetail> phoneDetails = contactNumberHelper.mapPhoneJsonStringToPhoneDetailObject(
-					organizationObject.getPhoneNo()
-					);
-			
-			/**
-			 * Get Organization name details
-			 */
-			organizationName = getOrganizationName(organizationObject);
-			
-			organizationDetails = new OrganizationVO.Details(
-					organizationUsers,
-					organizationName,
-					organizationObject.getCountry(),
-					organizationObject.getOrganizationType().getName(),
-					phoneDetails,
-					organizationObject.getEmail(),
-					organizationObject.getWebsite(),
-					generateTaxDetails(organizationObject.getTaxDetails())
-			);
-		}
-		
-		List<OrganizationVO.Details> details = List.of(organizationDetails);
-		List<Map<String, String>> orgTypes = getOrganizationTypes();
-		
-		return new OrganizationVO(details, orgTypes);
-	}
-	
 	/**
-	 * This method will retrieve and format organization entity name
-	 * to OrganizationVO.Details.OrganizationName
-	 * @param obj -receives Organization entity object
-	 * @return - OrganizationVO.Details.OrganizationName object
+	 * This method will map {@linkplain Organization} object
+	 * to {@linkplain OrganizationDetailsResponse} object type.
+	 * @param org - accepts {@linkplain Organization} object type.
+	 * @return - returns {@linkplain OrganizationDetailsResponse} object type.
 	 */
-	private OrganizationVO.Details.OrganizationName getOrganizationName(Organization obj) {
-		OrganizationVO.Details.OrganizationName organizationName =
-				new OrganizationVO.Details.OrganizationName(
-						obj.getName(),
-						obj.getLegalName(),
-						obj.getTradingName(),
-						obj.getOrganizationNameUpdate().isUpdatable(),
-						obj.getOrganizationNameUpdate().getUpdatedDate()
+	public OrganizationDetailsResponse mapOrganizationDetails(Organization org) {
+		/**
+		 * Will hold organization's basic information
+		 */
+		OrganizationDetailsResponse.BasicInformation basicInformation =
+				new OrganizationDetailsResponse.BasicInformation(
+						org.getDisplayName(),
+						org.getLegalName(),
+						org.getOrganizationDescription(),
+						Map.of(
+								"id", org.getOrganizationType().getId().toString(),
+								"type", org.getOrganizationType().getName()
+						)
 				);
+		/**
+		 * Will hold organization's contact details
+		 */
+		LinkedHashSet<PhoneDetail> phoneDetails =
+				contactNumberHelper.fromJsonStringToObject(org.getAddress());
+		Set<Map<String, String>> address =
+				addressHelper.jsonAddressStringToSetObj(org.getAddress().get("address"));
 		
-		return organizationName;
-	}
-	
-	/**
-	 * This method will transform organization users to
-	 * OrganizationVO.OrganizationUsers object type.
-	 * @param orgUsers: type Set<OrganizationUsers>
-	 * @return Set<OrganizationVO.OrganizationUsers> object
-	 */
-	private Set<OrganizationVO.OrganizationUsers> transformOrganizationUsers(Set<OrganizationUsers> orgUsers) {
-		Set<OrganizationVO.OrganizationUsers> organizationUsers = new HashSet<>();
-		
-		for(OrganizationUsers orgUser: orgUsers) {
-			organizationUsers.add(
-					new OrganizationVO.OrganizationUsers(
-							new OrganizationVO.OrganizationUsers.User(
-									orgUser.getUserId().getId().toString(),
-									orgUser.getUserId().getFirstName(),
-									orgUser.getUserId().getLastName(),
-									orgUser.getUserId().getEmail()
-									),
-							orgUser.getUserRole(),
-							orgUser.getUserJoined()
-							
-					)
-					);
-		}
-		
-		return organizationUsers;
-	}
-	
-	private List<Map<String, String>> getOrganizationTypes(){
-		return organizationTypeRepository.findAll()
+		OrganizationDetailsResponse.ContactInformation contactInformation =
+				new OrganizationDetailsResponse.ContactInformation(
+						org.getCountry(),
+						address,
+						org.getEmail(),
+						org.getWebsite(),
+						phoneDetails,
+						org.getExternalLinks()
+				);
+		/**
+		 * Will retrieve organization users
+		 */
+		Set<OrganizationDetailsResponse.Users> users =
+				org.getOrganizationUsers()
 				.stream()
-				.map(type -> {
-					Map<String, String> types = new HashMap<>();
-					types.put("id", type.getId().toString());
-					types.put("key", type.getName());
-					types.put("value", type.getName().contains("_") ? type.getName().replace("_", " ") : type.getName());
-					return types;
-				})
-				.toList();
-	}
-	
-	public AddressDetails createAddressDetails(Map<String, String> data) {
-		AddressDetails addressDetails = new AddressDetails();
-		addressDetails.setPhysicalAddressStreet((String) data.get("PhysicalAddressStreet"));
-		addressDetails.setPhysicalAddressCity((String) data.get("PhysicalAddressCity"));
-		addressDetails.setPhysicalAddressState((String) data.get("PhysicalAddressState"));
-		addressDetails.setPhysicalAddressPostalCode((String) data.get("PhysicalAddressPostalCode"));
-		addressDetails.setPostalAddressStreet((String) data.get("PostalAddressStreet"));
-		addressDetails.setPostalAddressCity((String) data.get("PostalAddressCity"));
-		addressDetails.setPostalAddressState((String) data.get("PostalAddressState"));
-		addressDetails.setPostalAddressPostalCode((String) data.get("PostalAddressPostalCode"));
-		return addressDetails;
-	}
-	
-	public FinancialSettings createFinancialSetting(OrganizationDetailsDTO.AddFinancialSetting financial) {
-		/**
-		 * Get currency type
-		 */
-		String currency = "";
-		switch (financial.defaultCurrency()) {
-		case OrganizationRepository.CURRENCY_BRAZIL -> currency = OrganizationRepository.CURRENCY_BRAZIL;
-		case OrganizationRepository.CURRENCY_CHINA -> currency = OrganizationRepository.CURRENCY_CHINA;
-		case OrganizationRepository.CURRENCY_EGYPT -> currency = OrganizationRepository.CURRENCY_EGYPT;
-		case OrganizationRepository.CURRENCY_INDIA -> currency = OrganizationRepository.CURRENCY_INDIA;
-		case OrganizationRepository.CURRENCY_MEXICO -> currency = OrganizationRepository.CURRENCY_MEXICO;
-		case OrganizationRepository.CURRENCY_PHILIPPINES -> currency = OrganizationRepository.CURRENCY_PHILIPPINES;
-		case OrganizationRepository.CURRENY_JAPAN -> currency = OrganizationRepository.CURRENY_JAPAN;
-		case OrganizationRepository.CURRENCY_SOUTH_AFRICA -> currency = OrganizationRepository.CURRENCY_SOUTH_AFRICA;
-		case OrganizationRepository.CURRENCY_SWITZERLAND -> currency = OrganizationRepository.CURRENCY_SWITZERLAND;
-		default -> currency = "n/a";
-		}
+				.map(user -> new OrganizationDetailsResponse.Users(
+						Map.of(
+								"id", user.getUserId().getId().toString(),
+								"firstName", user.getUserId().getFirstName(),
+								"lastName", user.getUserId().getLastName(),
+								"email", user.getUserId().getEmail()
+						),
+						user.getUserRole(),
+						user.getUserJoined()
+				))
+				.collect(Collectors.toSet());
 		
-		FinancialSettings data = new FinancialSettings();
-		data.setDefaultCurrency(currency);
-		data.setTimeZone(financial.timeZone());
-		
-		return data;
-	}
-	
-	/**
-	 * This method is used to update an organization entity
-	 * organization names (name, legalName, tradingName) are only changeable
-	 * once every 20 days
-	 * TODO work with updateOrganization service method
-	 * @param organizationId - {@linkplain java.util.UUID} type 
-	 * @param updatedData - {@linkplain OrganizationDetailsDTO} object type of data
-	 * @return - {@linkplain OrganizationVO} object type of data
-	 */
-	public OrganizationVO update(UUID organizationId, OrganizationDetailsDTO updatedData) {
-		Organization getOrganization = organizationRepository.findById(organizationId)
-				.orElseThrow(() -> new IllegalArgumentException("Organization object cannot be found."));
-		OrganizationNameUpdate organizationNameState = getOrganization.getOrganizationNameUpdate();
-		
-		/**
-		 * The following three conditions for fields: name, legalName, and TradingName
-		 * are only changeable once for every 20 days
-		 */
-		boolean isOrganizationNameUpdatable = organizationNameState.isUpdatable();
-		if (isOrganizationNameUpdatable) {
-			if (!Objects.equals(getOrganization.getName(), updatedData.name())) {
-				getOrganization.setName(updatedData.name());
-				organizationNameState.setUpdatedDate(LocalDate.now());
-			}
-			
-			if (!Objects.equals(getOrganization.getLegalName(), updatedData.legalName())) {
-				getOrganization.setLegalName(updatedData.legalName());
-				organizationNameState.setUpdatedDate(LocalDate.now());
-			}
-			
-			if (!Objects.equals(getOrganization.getTradingName(), updatedData.tradingName())) {
-				getOrganization.setTradingName(updatedData.tradingName());
-				organizationNameState.setUpdatedDate(LocalDate.now());
-			}
-		}
-		
-		OrganizationType getOrganizationType = getOrganizationType(updatedData.organizationType());
-		if (!Objects.equals(getOrganization.getOrganizationType(), getOrganizationType)) {
-			getOrganization.setOrganizationType(getOrganizationType);
-		}
-		
-		if (!Objects.equals(updatedData.countryCode(), getOrganization.getCountry())) {
-			getOrganization.setCountry(updatedData.countryCode());
-		}
-		
-		// TODO changing email needs verification feature
-		if (!Objects.equals(getOrganization.getEmail(), updatedData.email())) {
-			getOrganization.setEmail(updatedData.email());
-		}
-		
-		Set<Map<String, String>> addressDetails = addressHelper.jsonAddressStringToSetObject(
-				getOrganization.getAddress().get("address")
-				);
-				
-		if (!Objects.equals(updatedData.address(), addressDetails)) {
-			getOrganization.setAddress(
-					Map.of("address", addressHelper
-				.transformOrganizationAddressData(updatedData.address()).toString())
-					);
-		}
-		
-		if (!Objects.equals(updatedData.taxDetails(), getOrganization.getTaxDetails())) {
-			getOrganization.setTaxDetails(updatedData.taxDetails());
-		}
-		
-		/**
-		 * The following code is for the payment terms.
-		 * The updated payment term details must be validated first
-		 * while the entity's payment terms JSON (in string format)
-		 * is converted back to Map<String, BillAndSalesPaymentTermElement> format
-		 */
-		ObjectMapper objectMapper = new ObjectMapper();
-		
-		Map<String, BillAndSalesPaymentTermElement> updatedPaymentTermsData =
-				validatePaymentTerms(updatedData.paymentTerms()); // validate updated payment terms details
-		
-		Map<String, BillAndSalesPaymentTermElement> jsonStringPaymentTerms = null;
-		
-		try {
-			jsonStringPaymentTerms = objectMapper.readValue(
-					getOrganization.getPaymentTerms()
-					.get("paymentTerms"),
-					new TypeReference<Map<String, BillAndSalesPaymentTermElement>>() {}
-			);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		if (!Objects.equals(jsonStringPaymentTerms, updatedPaymentTermsData)) {
-			getOrganization.setPaymentTerms(Map.of("paymentTerms", Set.of(updatedPaymentTermsData).toString()));
-		}
-		return null;
-	}
-	
-	/**
-	 * This method will update the organization's user invitation
-	 * @param organizationId
-	 * @param updatedInvitationDetail
-	 */
-	public void updateUserOrganizationInvitation(UUID organizationId, UpdateUserOrganizationInvitation updatedInvitationDetail) {
+		return new OrganizationDetailsResponse(
+				org.getId(),
+				basicInformation,
+				contactInformation,
+				users
+		);
 		
 	}
-	
-	// TODO retrieve organization elements
-//	public OrganizationElementVO getOrganizationElements() {
-//		Set<OrganizationElementVO.OrganizationTypes> organizationTypes = organizationTypeRepository
-//				.findAll()
-//				.stream()
-//				.map(orgType -> new OrganizationElementVO.OrganizationTypes(orgType.getId().toString(), orgType.getName()))
-//				.collect(Collectors.toSet());
-//		
-//		return new OrganizationElementVO(
-//				Set.of(Roles.SUBSCRIBER.toString(), Roles.READ_ONLY.toString(), Roles.STANDARD.toString(), Roles.INVOICE_ONLY.toString()),
-//				organizationTypes,
-//				
-//				);
-//	}
 }

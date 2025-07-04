@@ -23,9 +23,9 @@ import core.hubby.backend.auth.dto.param.LoginRequest;
 import core.hubby.backend.auth.dto.param.SignupRequest;
 import core.hubby.backend.auth.jwt.JwtUtils;
 import core.hubby.backend.auth.vo.AuthResponse;
-import core.hubby.backend.business.entities.User;
+import core.hubby.backend.business.entities.UserAccount;
 import core.hubby.backend.business.enums.Roles;
-import core.hubby.backend.business.repositories.UserRepository;
+import core.hubby.backend.business.repositories.UserAccountRepository;
 import core.hubby.backend.core.api.error.ApiError;
 import core.hubby.backend.core.helper.ContactNumberHelper;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +37,7 @@ public class AuthController {
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
-    private final UserRepository userRepository;
+    private final UserAccountRepository userRepository;
     private final ContactNumberHelper phoneService;
     
     @PostMapping("signin")
@@ -56,7 +56,7 @@ public class AuthController {
         }
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        User getUser = userRepository.findUserByEmailIgnoreCase(loginRequest.email())
+        UserAccount getUser = userRepository.findUserByEmailIgnoreCase(loginRequest.email())
         		.orElseThrow(() -> new RuntimeException("User not found with email: " + loginRequest.email()));
         
         String jwtToken = jwtUtils.generateToken(getUser);
@@ -70,7 +70,7 @@ public class AuthController {
 
     @PostMapping("signup")
     public ResponseEntity<?> signup(@RequestBody SignupRequest signupRequest) {
-        Optional<User> findUserEmail = userRepository.findUserByEmailIgnoreCase(signupRequest.email());
+        Optional<UserAccount> findUserEmail = userRepository.findUserByEmailIgnoreCase(signupRequest.email());
 
         if (findUserEmail.isPresent()) {
             Map<String, Object> errorResponse = new HashMap<>();
@@ -79,7 +79,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body(errorResponse);
         }
         
-        User userBuilder = User.builder()
+        UserAccount userBuilder = UserAccount.builder()
         		.firstName(signupRequest.firstName())
         		.lastName(signupRequest.lastName())
         		.email(signupRequest.email())
@@ -87,7 +87,7 @@ public class AuthController {
         		.roles(Roles.NONE) // By default user account don't have a role yet
         		.build();
 
-        User newUser = userRepository.save(userBuilder);
+        UserAccount newUser = userRepository.save(userBuilder);
         String jwtToken = jwtUtils.generateToken(newUser);
         List<String> roles = newUser.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)

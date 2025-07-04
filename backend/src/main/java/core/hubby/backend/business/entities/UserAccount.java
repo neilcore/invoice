@@ -32,7 +32,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 @Builder
-public class User implements UserDetails, Serializable {
+public class UserAccount implements UserDetails, Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id @GeneratedValue(strategy = GenerationType.UUID)
