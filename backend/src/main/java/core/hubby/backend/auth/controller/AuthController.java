@@ -24,8 +24,11 @@ import core.hubby.backend.auth.dto.param.SignupRequest;
 import core.hubby.backend.auth.jwt.JwtUtils;
 import core.hubby.backend.auth.vo.AuthResponse;
 import core.hubby.backend.business.entities.UserAccount;
+import core.hubby.backend.business.entities.UserAccountSettings;
 import core.hubby.backend.business.enums.Roles;
 import core.hubby.backend.business.repositories.UserAccountRepository;
+import core.hubby.backend.business.repositories.UserAccountSettingsRepository;
+import core.hubby.backend.business.services.UserAccountService;
 import core.hubby.backend.core.api.error.ApiError;
 import core.hubby.backend.core.helper.ContactNumberHelper;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +41,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final UserAccountRepository userRepository;
+    private final UserAccountService userAccountService;
     private final ContactNumberHelper phoneService;
     
     @PostMapping("signin")
@@ -88,6 +92,13 @@ public class AuthController {
         		.build();
 
         UserAccount newUser = userRepository.save(userBuilder);
+        
+        /**
+         * Once the new user is created,
+         * create it's account settings
+         */
+        userAccountService.createUserAccountSetting(newUser);
+        
         String jwtToken = jwtUtils.generateToken(newUser);
         List<String> roles = newUser.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)

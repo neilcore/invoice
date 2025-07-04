@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import core.hubby.backend.business.dto.param.OrganizationCreateRequest;
-import core.hubby.backend.business.dto.param.UpdateUserOrganizationInvitation;
+import core.hubby.backend.business.dto.param.OrganizationUserInvitationUpdateRequest;
 import core.hubby.backend.business.dto.vo.OrganizationElementVO;
 import core.hubby.backend.business.dto.vo.OrganizationDetailsResponse;
 import core.hubby.backend.business.services.OrganizationService;
@@ -28,7 +28,7 @@ public class OrganizationController {
 	
 	@PostMapping("create")
 	public ResponseEntity<OrganizationDetailsResponse> createOrganization(@RequestBody @Valid OrganizationCreateRequest data) {
-		return ResponseEntity.ok(organizationService.create(data));
+		return ResponseEntity.ok(organizationService.createNewOrganizationObject(data));
 	}
 	
 	/**
@@ -66,7 +66,7 @@ public class OrganizationController {
 	@PutMapping("{id}/invite/users/update")
 	public ResponseEntity<?> updatedUserOrganizationInvitation(
 			@PathVariable("id") UUID id,
-			@Valid @RequestBody UpdateUserOrganizationInvitation data
+			@Valid @RequestBody OrganizationUserInvitationUpdateRequest data
 	) {
 		return null;
 	}

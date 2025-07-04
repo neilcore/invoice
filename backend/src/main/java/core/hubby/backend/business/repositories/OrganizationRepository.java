@@ -3,11 +3,13 @@ package core.hubby.backend.business.repositories;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import core.hubby.backend.business.entities.Organization;
+import core.hubby.backend.business.entities.UserAccount;
 import core.hubby.backend.core.data.BaseJpaRepository;
 
 @Repository
@@ -60,5 +62,11 @@ public interface OrganizationRepository extends BaseJpaRepository<Organization, 
 	@Query("select org from Organization org where org.id = :id")
 	Optional<Organization> findOrganizationById(@Param("id") UUID id);
 	
+	@Query(
+			value = "SELECT user_id FROM organization_user_invites WHERE organization_id = ?1" +
+			" AND user_role = 'SUBSCRIBER'",
+			nativeQuery = true
+	)
+	Optional<UserAccount> findOrganizationSubscriber(UUID organizationId);
 	
 }

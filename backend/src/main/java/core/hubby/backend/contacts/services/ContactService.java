@@ -2,6 +2,9 @@ package core.hubby.backend.contacts.services;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
@@ -11,6 +14,7 @@ import core.hubby.backend.contacts.dto.param.CreateContactParam;
 import core.hubby.backend.contacts.dto.vo.ContactVO;
 import core.hubby.backend.contacts.entities.Contact;
 import core.hubby.backend.contacts.repositories.ContactRepository;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -18,6 +22,41 @@ import lombok.RequiredArgsConstructor;
 public class ContactService {
 	private final ContactRepository contactRepository;
 	private final PaymentTermsRepository paymentTermsRepository;
+	
+	/**
+	 * This method will retrieve or create new contact if it can't find one.
+	 * If obj is instance of {@linkplain java.util.String} then create new contact entity
+	 * only by name.
+	 * If obj is instance of {@linkplain java.util.UUID} find the contact object using it's
+	 * ID.
+	 * @param obj - accepts {@linkplain Object} type
+	 * @return - {@linkplain @return} object type.
+	 * @throws - NoSuchElementException if it can't find the contact object by
+	 * it's given ID.
+	 */
+	public Contact findOrCreate(Object obj) {
+		Contact getContact = null;
+		if(obj instanceof String name) {
+			Contact createContactByName = Contact
+					.builder()
+					.name(name)
+					.build();
+			getContact = contactRepository.save(createContactByName);
+		} else if(obj instanceof UUID id) {
+			Optional<Contact> findContact = contactRepository
+					.findById(id);
+			
+			if(findContact.isEmpty()) {
+				throw new NoSuchElementException("Cannot find countact object.");
+			} else {
+				getContact = findContact.get();
+			}
+		} else {
+			throw new IllegalArgumentException("Invalid method argument.");
+		}
+		
+		return getContact;
+	}
 	
 	public ContactVO createNewContact(CreateContactParam data) {
 		// Check contact details

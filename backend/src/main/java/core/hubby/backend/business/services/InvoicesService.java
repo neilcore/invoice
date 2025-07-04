@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import core.hubby.backend.business.dto.param.CreateInvoiceDTO;
+import core.hubby.backend.business.dto.param.CreateInvoiceRequest;
 import core.hubby.backend.business.dto.vo.InvoiceVO;
 import core.hubby.backend.business.entities.Invoice;
 import core.hubby.backend.business.entities.InvoiceType;
@@ -36,83 +37,45 @@ public class InvoicesService {
 	private final TaxTypeRepository taxTypeRepository;
 	private final LineItemRepository lineItemRepository;
 	
-	@Transactional
-	public InvoiceVO createNewInvoice(CreateInvoiceDTO data) {
-		// Get invoice type
-		InvoiceType invoiceType = invoiceTypeRepository.findById(data.invoiceType())
-				.orElseThrow(() -> new IllegalArgumentException("Invoice type not found"));
-		
-		// Validate contact
-		boolean isUUID = isUuid(data.contact());
-		Optional<Contact> contact;
-		if (isUUID) {
-			contact = contactRepository.findById(UUID.fromString(data.contact()));
-		} else {
-			CreateContactParam contactParam = new CreateContactParam(data.contact());
-			
-			UUID newContactId = contactService.createNewContact(contactParam).contactId();
-			contact = contactRepository.findById(newContactId);
-		}
-		
-		// Create the invoice first before the LineItems
-		Invoice createInvoice = Invoice.builder()
-				.invoiceType(invoiceType)
-				.contact(contact.get())
-				.reference(data.reference())
-				.status(data.status())
-				.build();
-		Invoice newInvoice = invoiceRepository.save(createInvoice);
-		// Create the LineItems
-		for (Map<String, Object> lineItem: data.lineItems()) {
-			try {
-				Optional<TaxType> taxtType = taxTypeRepository.findById(UUID.fromString((String) lineItem.get("taxType")));
-				if (taxtType.isPresent()) {
-					LineItems newLineItem = LineItems.builder()
-							.invoice(newInvoice)
-							.description((String) lineItem.get("description"))
-							.quantity((Double) lineItem.get("quantity"))
-							.unitAmount((Double) lineItem.get("unitAmount"))
-							.accountCode((String) lineItem.get("accountCode"))
-							.taxType(taxtType.get())
-							.lineAmountType(data.lineAmountType())
-							.build();
-					
-					lineItemRepository.save(newLineItem);
-				}
-			} catch (Exception e) {
-				throw new RuntimeException("Error saving line item: " + e.getMessage(), e);
+	/**
+	 * This method will retrieve an invoice object
+	 * @param obj - accepts {@linkplain Object} type
+	 * If obj is null, return a new invoice object.
+	 * If obj is instance of {@linkplain java.util.UUID} fetch invoice object
+	 * using it's ID
+	 * @return - {@linkplain Invoice} object type.
+	 */
+	private Invoice retrieveInvoiceObject(Object obj) {
+		Optional<Invoice> findInvoice = Optional.empty();
+		if (obj == null) {
+			findInvoice = Optional.of(new Invoice());
+		} else if (obj instanceof UUID id) {
+			findInvoice = invoiceRepository.findById(id);
+			if (findInvoice.isEmpty()) {
+				throw new NoSuchElementException("Invoice object cannot be found.");
 			}
 		}
 		
-		List<Map<String, String>> invoices = new ArrayList<>();
-		Map<String, Object> invoiceElements = new HashMap<>();
-		
-		invoiceElements.put("Type", newInvoice.getInvoiceType().getName());
-		
-		// Get the contact details included in the invoice response
-		Map<String, Object> contactDetails = new HashMap<>();
-		contactDetails.put("ContactID", newInvoice.getContact().getId().toString());
-		contactDetails.put("ContactStatus", newInvoice.getContact().getContactStatus());
-		contactDetails.put("Name", newInvoice.getContact().getName());
-		
-		
-		invoiceElements.put("Contact", newInvoice.getContact().getName());
-		return null;
+		return findInvoice.get();
 	}
 	
-    /**
-     * Checks if a given String is a valid UUID.
-     *
-     * @param uuidString The string to check.
-     * @return true if the string is a valid UUID, false otherwise.
-     */
-    private static boolean isUuid(String uuidString) {
-        try {
-            UUID.fromString(uuidString);
-            return true;
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
-    }
+	public void createNewInvoiceObject(CreateInvoiceRequest request) {
+		// Create new Invoice object
+		Invoice invoice = retrieveInvoiceObject(null);
+		
+		/**
+		 * Retrieve and set invoice type object
+		 */
+		Optional<InvoiceType> findInvoiceType = invoiceTypeRepository.findById(request.invoiceType());
+		InvoiceType getInvoiceType = null;
+		
+		if(findInvoiceType.isEmpty()) {
+			throw new NoSuchElementException("Invoice type object cannot be found");
+		} else {
+			getInvoiceType = findInvoiceType.get();
+		}
+		
+		invoice.setInvoiceType(getInvoiceType);
+	}
 	
 }

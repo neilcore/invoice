@@ -10,13 +10,16 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import core.hubby.backend.business.enums.Roles;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -72,6 +75,9 @@ public class UserAccount implements UserDetails, Serializable {
     @Column(name = "part_of_organization", nullable = false)
     @Builder.Default
     private boolean partOfOrganization = false;
+    
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "userAccount")
+    private UserAccountSettings accountSettings;
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {

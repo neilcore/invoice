@@ -36,11 +36,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class Contact implements Serializable {
-	/*
-	 * Besides attributes with default values, Only the "name" attribute is non optional
+	/**
+	 * Only name attribute is non optional.
 	 * This is useful for automatic contact creation when creating invoices
-	 * */
-	
+	 */
+	private static final long serialVersionUID = 1L;
+
 	@Id @GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
 	

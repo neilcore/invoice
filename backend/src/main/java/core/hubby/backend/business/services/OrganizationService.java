@@ -1,15 +1,11 @@
 package core.hubby.backend.business.services;
 import org.springframework.stereotype.Service;
-
 import core.hubby.backend.business.dto.param.OrganizationCreateRequest;
 import core.hubby.backend.business.dto.vo.OrganizationDetailsResponse;
 import core.hubby.backend.business.entities.Organization;
 import core.hubby.backend.business.entities.OrganizationType;
-import core.hubby.backend.business.entities.embedded.OrganizationUserInvites;
-import core.hubby.backend.business.entities.embedded.OrganizationUsers;
 import core.hubby.backend.business.repositories.OrganizationRepository;
 import core.hubby.backend.business.repositories.OrganizationTypeRepository;
-import core.hubby.backend.business.repositories.UserAccountRepository;
 import core.hubby.backend.core.dto.PhoneDetail;
 import core.hubby.backend.core.helper.AddressHelper;
 import core.hubby.backend.core.helper.ContactNumberHelper;
@@ -18,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -30,7 +27,6 @@ public class OrganizationService {
 	private static final Set<String> paymentTermsElements = new HashSet<>();
 	
 	private final OrganizationRepository organizationRepository;
-	private final UserAccountRepository userRepository;
 	private final OrganizationTypeRepository organizationTypeRepository;
 	private final ContactNumberHelper contactNumberHelper;
 	private final AddressHelper addressHelper;
@@ -53,54 +49,121 @@ public class OrganizationService {
 	}
 	
 	/**
-	 * This method will create new organization entity
+	 * This method will retrieve an organization entity.
+	 * If obj is null, return a new Organization object.
+	 * If obj is instance of UUID, retrieve the organization object using it's ID.
+	 * @param obj - accepts {@linkplain Object} type.
+	 * @return - {@linkplain Organization} object type.
+	 */
+	private Organization getOrganizationObject(Object obj) {
+		Optional<Organization> findOrganization = Optional.empty();
+		
+		if (obj == null) {
+			findOrganization = Optional.of(new Organization());
+		} else if (obj instanceof UUID id) {
+			findOrganization = organizationRepository
+					.findById(id);
+			
+			if (findOrganization.isEmpty()) {
+				throw new NoSuchElementException("Organization entity cannot be found.");
+			}
+		}
+		
+		return findOrganization.get();
+	}
+	
+	/**
+	 * This will persist the organization object to database (the actual creation of the entity
+	 * to the database)
+	 * @param organization - accepts {@linkplain Organization} object type.
+	 * @return - {@linkplain OrganizationDetailsResponse} object type.
+	 */
+	private OrganizationDetailsResponse save(Organization organization) {
+		Organization newOrganization = organizationRepository.save(organization);
+		return mapOrganizationDetails(newOrganization);
+	}
+	
+	/**
+	 * This method will create new organization object
 	 * @param - {@linkplain OrganizationCreateRequest} object type of data
 	 * @return - {@linkplain OrganizationDetailsResponse} object type of data
 	 */
 	@Transactional
-	public OrganizationDetailsResponse create(OrganizationCreateRequest data) {
-		/**
-		 * Set the subscriber as the first organization user
-		 */
-		Set<OrganizationUsers> organizationUsers = Set.of(userAccountService.addSubscriber());
+	public OrganizationDetailsResponse createNewOrganizationObject(OrganizationCreateRequest data) {
+		Organization org = getOrganizationObject(null); // New organization object
 		
-		/**
-		 * Check if there are invites
-		 */
-		Set<OrganizationUserInvites> userInvites = userAccountService.addInvitedUsers(data.inviteOtherUser());
+		// Set organization basic information
+		setBasicInformation(data.basicInformation(), org);
 		
-		/**
-		 * Transform organization address data to fit the internal models
-		 */
+		// Set organization contact details
+		setContactDetails(data.contactDetails(), org);
+		
+		// Set the creator if the organization as the advisor.
+		userAccountService.addAdvisor(org);
+		
+		// Set organization invited users
+		userAccountService.addInvitedUsers(data.inviteOtherUser(), org);
+		
+		return save(org);
+		
+	}
+	
+	/**
+	 * The following fields are part of organization's basic informations:
+	 * - displayName
+	 * - legalName,
+	 * - organizationType
+	 * - organizationDescription
+	 * @param info - accepts {@linkplain OrganizationCreateRequest.BasicInformation} object type.
+	 * @param organization - accepts {@linkplain Organization} object type.
+	 */
+	private void setBasicInformation(
+			OrganizationCreateRequest.BasicInformation info,
+			Organization organization
+	) {
+		OrganizationType type = getOrganizationType(info.organizationType());
+		organization.setBasicInformation(
+				info.displayName(),
+				info.legalName(),
+				type,
+				info.organizationDescription()
+		);
+	}
+	
+	/**
+	 * This method will set the organization's contact details.
+	 * Contact details include:
+	 * - countryCode
+	 * - addresses
+	 * - phoneDetails
+	 * - email
+	 * - website
+	 * - externalLinks
+	 * @param contacts - accepts {@linkplain OrganizationCreateRequest.ContactDetails} object type
+	 * @param organization - accepts {@linkplain Organization} object type.
+	 */
+	private void setContactDetails(
+			OrganizationCreateRequest.ContactDetails contacts,
+			Organization organization
+	) {
+		// Transform organization address data to fit the internal models
 		Set<Map<String, String>> transformedAddress = addressHelper
-				.transformOrganizationAddressData(data.contactDetails().address());
+				.transformOrganizationAddressData(contacts.address());
 		
-		String getPhoneDetails = 
-				contactNumberHelper.parsePhoneNumbers(data.contactDetails().phoneNo());
+		// Set organization phone details
+		String getPhoneDetails = contactNumberHelper.parsePhoneNumbers(contacts.phoneNo());
 		
-		Organization newOrganization = Organization.builder()
-				.organizationUsers(organizationUsers)
-				.organizationUserInvites(userInvites)
-				.displayName(data.basicInformation().displayName())
-				.legalName(data.basicInformation().legalName())
-				.organizationDescription(data.basicInformation().organizationDescription())
-				.organizationType(getOrganizationType(data.basicInformation().organizationType()))
-				.country(data.contactDetails().countryCode())
-				.phoneNo(Map.of("phones", getPhoneDetails))
-				.email(data.contactDetails().email())
-				.website(data.contactDetails().website())
-				.address(Map.of("address", transformedAddress.toString()))
-				.externalLinks(
-						data.contactDetails().externalLinks().stream()
-						.filter(lkFilter ->
-						externalLinks.contains(lkFilter.getLinkType().toLowerCase())
-						).collect(Collectors.toSet())
-				)
-				.build();
-		
-		Organization org = organizationRepository.save(newOrganization);
-		return mapOrganizationDetails(org);
-		
+		organization.setContactDetails(
+				contacts.countryCode(),
+				transformedAddress,
+				getPhoneDetails,
+				contacts.email(),
+				contacts.website(),
+				contacts.externalLinks().stream()
+				.filter(lkFilter ->
+				externalLinks.contains(lkFilter.getLinkType().toLowerCase())
+				).collect(Collectors.toSet())
+		);
 	}
 	
 	/**

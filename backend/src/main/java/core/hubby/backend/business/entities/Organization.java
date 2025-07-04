@@ -48,8 +48,8 @@ import lombok.ToString;
 
 @Entity
 @Table(name = "organization", schema = "app_sc")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
+@AllArgsConstructor(access = AccessLevel.PUBLIC)
 @Data
 @ToString
 @Builder
@@ -79,7 +79,6 @@ public class Organization implements Serializable {
 			joinColumns = {@JoinColumn(name = " organization_id", referencedColumnName = "id", nullable = false)})
 	private Set<OrganizationUserInvites> organizationUserInvites;
 	
-	// TODO rename column "name" to "display_name"
 	@Column(name = "display_name", nullable = false)
 	@NotBlank(message = "displayName cannot be blank.")
 	private String displayName;
@@ -89,12 +88,6 @@ public class Organization implements Serializable {
 	@NotBlank(message = "legalName cannot be blank.")
 	private String legalName;
 	
-	// TODO remove trading_name column for organization
-	// Optional: The name the business trades under, if different from legal name
-	@Column(name = "trading_name")
-	private String tradingName;
-	
-	// TODO create organization_description column migration script
 	@Column(name = "organization_description")
 	private String organizationDescription;
 	
@@ -178,5 +171,34 @@ public class Organization implements Serializable {
 	@Builder.Default
 	@Enumerated(EnumType.STRING)
 	private Status status = Status.ACTIVE_ACCOUNT;
+	
+	public void setBasicInformation(
+			String displayName,
+			String legalName,
+			OrganizationType organizationType,
+			String description
+	) {
+		this.setDisplayName(displayName);
+		this.setLegalName(legalName);
+		this.setOrganizationType(organizationType);
+		this.setOrganizationDescription(description);
+	}
+	
+	public void setContactDetails(
+			String countryCode,
+			Set<Map<String, String>> address,
+			String phones,
+			String email,
+			String website,
+			Set<ExternalLinks> externalLinks
+			
+	) {
+		this.setCountry(countryCode);
+		this.setAddress(Map.of("address", address.toString()));
+		this.setPhoneNo(Map.of("phones", phones));
+		this.setEmail(email);
+		this.setWebsite(website);
+		this.setExternalLinks(externalLinks);
+	}
 	
 }
