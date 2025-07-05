@@ -10,6 +10,6 @@ import core.hubby.backend.core.data.BaseJpaRepository;
 @Repository
 public interface InvoiceTypeRepository extends BaseJpaRepository<InvoiceType, UUID> {
 	// Invoice Types
-	static final String INVOICE_TYPE_ACCREC = "ACCREC";
-	static final String INVOICE_TYPE_ACCPAY = "ACCPAY";
+	static final String INVOICE_TYPE_ACR = "ACR";
+	static final String INVOICE_TYPE_ACP = "ACP";
 }

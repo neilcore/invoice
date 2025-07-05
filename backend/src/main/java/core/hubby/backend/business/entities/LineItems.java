@@ -19,6 +19,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ *  the "LineItems" collection holds all the granular detail
+ *  about what is being bought or sold on that particular invoice.
+ *  When you create an invoice in Xero, you add multiple "line items"
+ *  to build up the total amount.
+ */
 @Entity
 @Table(name = "line_items", schema = "app_sc")
 @NoArgsConstructor
@@ -77,4 +83,8 @@ public class LineItems implements Serializable {
 	@Column(name = "tax_amount", nullable = false)
 	@NotNull(message = "Tax amount cannot be null")
 	private Double taxAmount;
+	
+	// TODO - create lineItems migration script
+	@Column(name = "discount_rate")
+	private Integer discountRate;
 }

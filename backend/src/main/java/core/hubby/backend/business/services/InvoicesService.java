@@ -79,7 +79,9 @@ public class InvoicesService {
 			invoice.setContact(getContactObject.get());
 		}
 		
-		setLineItems(invoice, request.lineItems(), request.lineAmountType());
+		setLineItems(invoice, request.lineItems(), request.lineAmountType(), getContactObject.get().getDefaultDiscount());
+		calculateInvoice(invoice);
+		
 		invoice.setDate(request.date());
 		invoice.setDueDate(request.dueDate());
 		invoice.setStatus(request.status().isEmpty() ? "DRAFT" : request.status()); // "DRAFT" is the default status
@@ -103,7 +105,8 @@ public class InvoicesService {
 	private Invoice setLineItems(
 			Invoice invoice,
 			Set<CreateInvoiceRequest.LineItems> lineItemsSet,
-			String lineAmountTypeRequest
+			String lineAmountTypeRequest,
+			Integer customerDefaultDiscount
 	) {
 		/**
 		 * In Java, when you use a variable from an outer scope within a
@@ -127,19 +130,38 @@ public class InvoicesService {
 		Set<LineItems> lineItems = lineItemsSet
 				.stream()
 				.map( lineItem -> {
-					LineItems createLineItem = LineItems.builder()
-							.lineAmountType(lineAmountType) // lineAmountType is now effectively final
-							.description(lineItem.description())
-							.quantity(lineItem.quantity())
-							.unitAmount(lineItem.unitAmount())
-							.accountCode(lineItem.accountCode())
-							.taxType(taxTypeRepository.findById(lineItem.taxType()).orElseThrow(() -> new NoSuchElementException("Tax type object cannot be found.")))
-							.build();
+					LineItems createLineItem = new LineItems();
+					/**
+					 * Check if line item discount rate is specified.
+					 * If not check if customer's default discount rate is specified.
+					 */
+		
+					Integer discountRateIfExists = lineItem.discountRate() != null
+							|| lineItem.discountRate() != 0 ?
+							lineItem.discountRate() : customerDefaultDiscount != null ?
+									customerDefaultDiscount : null;
+					
+					Double calculateLineAmount = discountRateIfExists != null ?
+							lineItem.quantity() * lineItem.unitAmount() * ((100 - discountRateIfExists) / 100)
+							: lineItem.quantity() * lineItem.unitAmount();
+					
+					createLineItem.setDiscountRate(discountRateIfExists);
+					createLineItem.setLineAmountType(lineAmountType);
+					createLineItem.setDescription(lineItem.description());
+					createLineItem.setQuantity(lineItem.quantity());
+					createLineItem.setUnitAmount(lineItem.unitAmount());
+					createLineItem.setLineAmount(calculateLineAmount);
+					createLineItem.setAccountCode(lineItem.accountCode());
+					createLineItem.setTaxType(taxTypeRepository.findById(lineItem.taxType()).orElseThrow(() -> new NoSuchElementException("Tax type object cannot be found.")));
 					return createLineItem;
 				})
 				.collect(Collectors.toSet());
 		invoice.setLineItems(lineItems);
 		
+		return invoice;
+	}
+	
+	private Invoice calculateInvoice(Invoice invoice) {
 		return invoice;
 	}
 	

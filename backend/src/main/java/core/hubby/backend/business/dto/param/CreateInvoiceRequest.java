@@ -5,9 +5,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.aspectj.weaver.patterns.ThisOrTargetAnnotationPointcut;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -21,8 +25,9 @@ public record CreateInvoiceRequest(
 		@NotNull(message = "lineAmounType component cannot be null")
 		@Pattern(regexp = "^[A-Z](?:[A-Z]|_[A-Z])*$", message = "Invalid value for lineAmountType component.")
 		String lineAmountType,
+		@NotNull(message = "date component cannot be null.")
 		LocalDate date,
-		@FutureOrPresent(message = "Invalid value for dueDate component.")
+		@Future(message = "Invalid value for dueDate component.")
 		@DateTimeFormat(iso = ISO.DATE)
 		LocalDate dueDate,
 		String status,
@@ -57,11 +62,16 @@ public record CreateInvoiceRequest(
 			@NotNull(message = "description component cannot be null.")
 			String description,
 			@NotNull(message = "quantity component cannot be null.")
+			@DecimalMin("1.0")
+			@Digits(fraction = 1, integer = 3)
 			Double quantity,
 			@NotNull(message = "unitAmount component cannot be null.")
+			@Digits(fraction = 2, integer = 6)
 			Double unitAmount,
 			String accountCode,
 			@Pattern(regexp = "^[A-Z](?:[A-Z]|_[A-Z])*$", message = "Invalid value for taxType component.")
-			UUID taxType
-	) {}
+			UUID taxType,
+			Integer discountRate
+	) {
+	}
 }

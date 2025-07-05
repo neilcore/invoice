@@ -70,4 +70,23 @@ public class Invoice implements java.io.Serializable {
 	@Column(name = "reference", nullable = true)
 	@NotBlank(message = "Reference cannot be blank")
 	private String reference;
+	
+	// TODO create a migration script for lineAmount
+	@Column(name = "line_amount", nullable = false)
+	@NotNull(message = "lineAmount cannot be null")
+	private Double lineAmount;
+	
+	// TODO create a migration script for subTotal
+	@Column(name = "sub_total", nullable = false)
+	@NotNull(message = "subTotal cannot be null.")
+	private Double subTotal;
+	
+	// TODO create a migration script for grandTotal
+	@Column(name = "grand_total", nullable = false)
+	@NotNull(message = "grandTotal cannot be null.")
+	private Double grandTotal;
+	
+	// TODO create a migration script for totalTax
+	@Column(name = "total_tax")
+	private Double totalTax; // value-added tax
 }

@@ -72,6 +72,10 @@ public class Contact implements Serializable {
 	@Column(name = "company_number")
 	private String companyNumber;
 	
+	// TODO - create migration script for this
+	@Column(name = "default_discount")
+	private Integer defaultDiscount;
+	
 	// Tax number
 	@Column(name = "tax_number")
 	private String taxNumber;
