@@ -1,7 +1,6 @@
 package core.hubby.backend.business.dto.param;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -11,6 +10,7 @@ import org.springframework.format.annotation.DateTimeFormat.ISO;
 
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 public record CreateInvoiceRequest(
 		@NotNull(message = "invoiceType component cannot be null.")
@@ -19,6 +19,7 @@ public record CreateInvoiceRequest(
 		Map<String, Object> contact,
 		Set<LineItems> lineItems,
 		@NotNull(message = "lineAmounType component cannot be null")
+		@Pattern(regexp = "^[A-Z](?:[A-Z]|_[A-Z])*$", message = "Invalid value for lineAmountType component.")
 		String lineAmountType,
 		LocalDate date,
 		@FutureOrPresent(message = "Invalid value for dueDate component.")
@@ -56,10 +57,11 @@ public record CreateInvoiceRequest(
 			@NotNull(message = "description component cannot be null.")
 			String description,
 			@NotNull(message = "quantity component cannot be null.")
-			Float quantity,
+			Double quantity,
 			@NotNull(message = "unitAmount component cannot be null.")
-			Float unitAmount,
+			Double unitAmount,
 			String accountCode,
-			String taxType
+			@Pattern(regexp = "^[A-Z](?:[A-Z]|_[A-Z])*$", message = "Invalid value for taxType component.")
+			UUID taxType
 	) {}
 }

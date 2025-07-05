@@ -1,7 +1,7 @@
 package core.hubby.backend.business.entities;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -50,7 +50,7 @@ public class Invoice implements java.io.Serializable {
 	private Contact contact;
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "invoice")
-	private List<LineItems> lineItems;
+	private Set<LineItems> lineItems;
 	
 	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
 	@PastOrPresent(message = "Date cannot be in the future")
