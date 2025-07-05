@@ -30,18 +30,20 @@ public class ContactService {
 	 * If obj is instance of {@linkplain java.util.UUID} find the contact object using it's
 	 * ID.
 	 * @param obj - accepts {@linkplain Object} type
-	 * @return - {@linkplain @return} object type.
+	 * @return - {@linkplain java.util.Optional} object that can hold {@linkplain Contact} object type.
 	 * @throws - NoSuchElementException if it can't find the contact object by
 	 * it's given ID.
 	 */
-	public Contact findOrCreate(Object obj) {
-		Contact getContact = null;
+	public Optional<Contact> findOrCreate(@NotNull Map<String, Object> contact) {
+		Optional<Contact> getContact = Optional.empty();
+		Object obj = contact.get("contactId");
+		
 		if(obj instanceof String name) {
 			Contact createContactByName = Contact
 					.builder()
 					.name(name)
 					.build();
-			getContact = contactRepository.save(createContactByName);
+			getContact = Optional.of(contactRepository.save(createContactByName));
 		} else if(obj instanceof UUID id) {
 			Optional<Contact> findContact = contactRepository
 					.findById(id);
@@ -49,7 +51,7 @@ public class ContactService {
 			if(findContact.isEmpty()) {
 				throw new NoSuchElementException("Cannot find countact object.");
 			} else {
-				getContact = findContact.get();
+				getContact = findContact;
 			}
 		} else {
 			throw new IllegalArgumentException("Invalid method argument.");

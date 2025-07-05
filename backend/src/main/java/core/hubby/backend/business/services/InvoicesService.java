@@ -76,6 +76,14 @@ public class InvoicesService {
 		}
 		
 		invoice.setInvoiceType(getInvoiceType);
+		
+		// Set invoice contact
+		Optional<Contact> getContactObject = contactService.findOrCreate(request.contact());
+		if (getContactObject.isEmpty()) {
+			throw new NoSuchElementException("Contact object cannot be found.");
+		} else {
+			invoice.setContact(getContactObject.get());
+		}
 	}
 	
 }
