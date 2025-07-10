@@ -4,8 +4,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import core.hubby.backend.business.entities.embedded.ExternalLinks;
-import core.hubby.backend.core.dto.PhoneDetail;
+import core.hubby.backend.business.common.ExternalLinks;
+import core.hubby.backend.business.common.PhoneDetails;
+import core.hubby.backend.core.validation.annotation.ValidAddressKeys;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -54,8 +55,10 @@ public record OrganizationCreateRequest(
 	public record ContactDetails(
 			@Size(min = 2, max = 2)
 			String countryCode,
+			@ValidAddressKeys
+			@NotNull(message = "address component cannot be null.")
 			Set<Map<String, String>> address,
-			LinkedHashSet<PhoneDetail> phoneNo,
+			LinkedHashSet<PhoneDetails> phoneNo,
 			@Email(message = "Invalid email component value")
 			@NotBlank(message = "Email component cannot be blank.")
 			String email,

@@ -39,8 +39,7 @@ public class DefaultUserInitializer implements CommandLineRunner {
 			defaultUser.setEmail(defaultEmail);
 			defaultUser.setFirstName(defaultFirstName);
 			defaultUser.setLastName(defaultLastName);
-			defaultUser.setPassword(passwordEncoder.encode(defaultPassword));
-			defaultUser.setPhoneNumber(defaultPhoneNumber);
+			defaultUser.setAccountPassword(passwordEncoder.encode(defaultPassword));
 			defaultUser.setRoles(Roles.NONE);
 			
 			userRepository.save(defaultUser);

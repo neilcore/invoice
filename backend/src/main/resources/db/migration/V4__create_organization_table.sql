@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS organization (
+	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+	display_name VARCHAR(255) NOT NULL UNIQUE,
+	legal_name VARCHAR(255) NOT NULL UNIQUE,
+	organization_description TEXT,
+	country VARCHAR(10) NOT NULL,
+	organization_type uuid NOT NULL REFERENCES organization_type(id),
+	phone_no JSONB[] NOT NULL,
+	email VARCHAR(200) NOT NULL,
+	website VARCHAR(200),
+	default_currency VARCHAR(100),
+	time_zone VARCHAR(100),
+	financial_year JSONB[],
+	address JSONB[] NOT NULL,
+	external_links JSONB[],
+	payment_terms JSONB,
+	created_date DATE NOT NULL DEFAULT CURRENT_DATE,
+	active_subscription BOOLEAN NOT NULL DEFAULT true,
+	status VARCHAR(100) DEFAULT 'ACTIVE_ACCOUNT'
+);

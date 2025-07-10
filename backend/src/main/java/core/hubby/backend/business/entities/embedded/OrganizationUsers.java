@@ -1,9 +1,5 @@
 package core.hubby.backend.business.entities.embedded;
-
-import java.nio.file.attribute.UserDefinedFileAttributeView;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.util.UUID;
 
 import core.hubby.backend.business.entities.UserAccount;
 import jakarta.persistence.CascadeType;

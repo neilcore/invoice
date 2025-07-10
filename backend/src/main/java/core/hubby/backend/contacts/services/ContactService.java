@@ -8,12 +8,12 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import core.hubby.backend.business.entities.PaymentTerms;
-import core.hubby.backend.business.repositories.PaymentTermsRepository;
 import core.hubby.backend.contacts.dto.param.CreateContactParam;
 import core.hubby.backend.contacts.dto.vo.ContactVO;
 import core.hubby.backend.contacts.entities.Contact;
+import core.hubby.backend.contacts.entities.PaymentTerms;
 import core.hubby.backend.contacts.repositories.ContactRepository;
+import core.hubby.backend.contacts.repositories.PaymentTermsRepository;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 

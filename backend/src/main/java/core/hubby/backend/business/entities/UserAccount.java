@@ -3,8 +3,11 @@ package core.hubby.backend.business.entities;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -39,7 +42,8 @@ public class UserAccount implements UserDetails, Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id @GeneratedValue(strategy = GenerationType.UUID)
-	private UUID id;
+	@Column(name = "user_id", nullable = false, unique = true)
+	private UUID userId;
 	
 	@Column(nullable = false, unique = true, name = "email")
 	@Email(message = "Email should be valid")
@@ -53,12 +57,13 @@ public class UserAccount implements UserDetails, Serializable {
 	@NotBlank(message = "Last name is mandatory")
 	private String lastName;
 	
-	@Column(name = "password", nullable = false)
-	@NotBlank(message = "Password is mandatory")
-	private String password;
+	@Column(name = "account_password", nullable = false)
+	@NotNull(message = "accountPassword cannot be null.")
+	private String accountPassword;
 	
-	@Column(name = "phone_number")
-	private String phoneNumber;
+	@Column(name = "contact_number", columnDefinition = "jsonb")
+	@JdbcTypeCode(SqlTypes.JSON)
+	private Map<String, String> contactNumber;
 	
     @Column(name = "roles", nullable = false)
     @NotNull(message = "Roles cannot be null")
@@ -91,7 +96,7 @@ public class UserAccount implements UserDetails, Serializable {
 	
     @Override
     public String getPassword() {
-        return this.password;
+        return this.accountPassword;
     }
 
 }

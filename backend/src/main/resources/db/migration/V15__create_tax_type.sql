@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS tax_type (
+	id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+	label VARCHAR(200) NOT NULL UNIQUE,
+	tax_type JSONB NOT NULL
+);

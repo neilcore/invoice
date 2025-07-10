@@ -6,13 +6,9 @@ import core.hubby.backend.business.entities.Organization;
 import core.hubby.backend.business.entities.OrganizationType;
 import core.hubby.backend.business.repositories.OrganizationRepository;
 import core.hubby.backend.business.repositories.OrganizationTypeRepository;
-import core.hubby.backend.core.dto.PhoneDetail;
-import core.hubby.backend.core.helper.AddressHelper;
-import core.hubby.backend.core.helper.ContactNumberHelper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -28,8 +24,6 @@ public class OrganizationService {
 	
 	private final OrganizationRepository organizationRepository;
 	private final OrganizationTypeRepository organizationTypeRepository;
-	private final ContactNumberHelper contactNumberHelper;
-	private final AddressHelper addressHelper;
 	private final UserAccountService userAccountService;
 	
 	static {
@@ -55,7 +49,7 @@ public class OrganizationService {
 	 * @param obj - accepts {@linkplain Object} type.
 	 * @return - {@linkplain Organization} object type.
 	 */
-	private Organization getOrganizationObject(Object obj) {
+	protected Organization getOrganizationObject(Object obj) {
 		Optional<Organization> findOrganization = Optional.empty();
 		
 		if (obj == null) {
@@ -146,23 +140,14 @@ public class OrganizationService {
 			OrganizationCreateRequest.ContactDetails contacts,
 			Organization organization
 	) {
-		// Transform organization address data to fit the internal models
-		Set<Map<String, String>> transformedAddress = addressHelper
-				.transformOrganizationAddressData(contacts.address());
-		
-		// Set organization phone details
-		String getPhoneDetails = contactNumberHelper.parsePhoneNumbers(contacts.phoneNo());
 		
 		organization.setContactDetails(
-				contacts.countryCode(),
-				transformedAddress,
-				getPhoneDetails,
+				contacts.countryCode(), // TODO - need to validated country code
+				contacts.address(),
+				contacts.phoneNo(),
 				contacts.email(),
 				contacts.website(),
-				contacts.externalLinks().stream()
-				.filter(lkFilter ->
-				externalLinks.contains(lkFilter.getLinkType().toLowerCase())
-				).collect(Collectors.toSet())
+				contacts.externalLinks()
 		);
 	}
 	
@@ -215,21 +200,14 @@ public class OrganizationService {
 								"type", org.getOrganizationType().getName()
 						)
 				);
-		/**
-		 * Will hold organization's contact details
-		 */
-		LinkedHashSet<PhoneDetail> phoneDetails =
-				contactNumberHelper.fromJsonStringToObject(org.getAddress());
-		Set<Map<String, String>> address =
-				addressHelper.jsonAddressStringToSetObj(org.getAddress().get("address"));
 		
 		OrganizationDetailsResponse.ContactInformation contactInformation =
 				new OrganizationDetailsResponse.ContactInformation(
 						org.getCountry(),
-						address,
+						org.getAddress(),
 						org.getEmail(),
 						org.getWebsite(),
-						phoneDetails,
+						org.getPhoneNo(),
 						org.getExternalLinks()
 				);
 		/**
@@ -240,7 +218,7 @@ public class OrganizationService {
 				.stream()
 				.map(user -> new OrganizationDetailsResponse.Users(
 						Map.of(
-								"id", user.getUserId().getId().toString(),
+								"id", user.getUserId().getUserId().toString(),
 								"firstName", user.getUserId().getFirstName(),
 								"lastName", user.getUserId().getLastName(),
 								"email", user.getUserId().getEmail()

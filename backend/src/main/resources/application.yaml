@@ -26,6 +26,7 @@ spring:
       password: "password"
    # Configure Hibernate
    jpa:
+      database-platform: org.hibernate.dialect.PostgreSQLDialect 
       properties:
          hibernate:
             generate_statistics: true # ONLY FOR DEVELOPMENT

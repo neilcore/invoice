@@ -1,6 +1,0 @@
-BEGIN;
-
-ALTER TABLE contact
-ALTER COLUMN address DROP NOT NULL;
-
-COMMIT;

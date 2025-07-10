@@ -6,13 +6,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import core.hubby.backend.business.entities.embedded.ExternalLinks;
-import core.hubby.backend.core.dto.PhoneDetail;
+import core.hubby.backend.business.common.ExternalLinks;
+import core.hubby.backend.business.common.PhoneDetails;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
+
 
 public record OrganizationDetailsResponse (
 		UUID organizationId,
@@ -38,7 +39,7 @@ public record OrganizationDetailsResponse (
 			@NotBlank(message = "Email component cannot be blank.")
 			String email,
 			String website,
-			LinkedHashSet<PhoneDetail> phoneNo,
+			LinkedHashSet<PhoneDetails> phoneNo,
 			Set<ExternalLinks> externalLinks
 	) {}
 	

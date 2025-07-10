@@ -1,2 +1,0 @@
-ALTER TABLE contact
-	ADD COLUMN phone VARCHAR(50);

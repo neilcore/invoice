@@ -1,6 +1,7 @@
 package core.hubby.backend.business.entities;
 
 import java.time.LocalDate;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.UUID;
 
@@ -37,24 +38,26 @@ public class Invoice implements java.io.Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id @GeneratedValue(strategy = GenerationType.UUID)
-	@Column(name = "id")
-	private UUID id;
+	@Column(name = "invoice_id", nullable = false, unique = true)
+	private UUID invoiceId;
 	
-	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "invoice_type", referencedColumnName = "id", nullable = false)
+	@Column(name = "invoice_type", nullable = false)
 	@NotNull(message = "Invoice type cannot be null")
-	private InvoiceType invoiceType;
+	private String type;
 	
 	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "contact", referencedColumnName = "id", nullable = false)
+	@JoinColumn(name = "contact", referencedColumnName = "contact_id", nullable = false)
 	private Contact contact;
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "invoice")
 	private Set<LineItems> lineItems;
 	
+	@Column(name = "line_amount_type")
+	private String lineAmountTypes;
+	
 	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-	@PastOrPresent(message = "Date cannot be in the future")
-	@NotNull(message = "Date cannot be null")
+	@PastOrPresent(message = "Invalid value for date field.")
+	@Column(name = "invoice_date")
 	private LocalDate date;
 	
 	@Column(name = "due_date", nullable = false)
@@ -65,28 +68,40 @@ public class Invoice implements java.io.Serializable {
 	
 	@Builder.Default
 	@NotBlank(message = "Status cannot be blank")
+	@Column(name = "invoice_status", nullable = false)
 	private String status = "DRAFT";
 	
-	@Column(name = "reference", nullable = true)
+	@Column(name = "reference")
 	@NotBlank(message = "Reference cannot be blank")
 	private String reference;
 	
-	// TODO create a migration script for lineAmount
-	@Column(name = "line_amount", nullable = false)
-	@NotNull(message = "lineAmount cannot be null")
-	private Double lineAmount;
-	
-	// TODO create a migration script for subTotal
 	@Column(name = "sub_total", nullable = false)
 	@NotNull(message = "subTotal cannot be null.")
 	private Double subTotal;
 	
-	// TODO create a migration script for grandTotal
 	@Column(name = "grand_total", nullable = false)
 	@NotNull(message = "grandTotal cannot be null.")
 	private Double grandTotal;
 	
-	// TODO create a migration script for totalTax
 	@Column(name = "total_tax")
 	private Double totalTax; // value-added tax
+	
+	public void setLineAmountTypes(String lineAmountTypes) {
+		if (lineAmountTypes.isEmpty() || lineAmountTypes.isBlank()) {
+			this.lineAmountTypes = null;
+		}else if (!Set.of("EXCLUSIVE", "INCLUSIVE", "NO_TAX").contains(lineAmountTypes)) {
+			throw new NoSuchElementException("Invalid line amount type.");
+		}else {
+			this.lineAmountTypes = lineAmountTypes;
+		}
+	}
+	
+	
+	public void setType(String type) {
+		if (!Set.of("ACCOUNT_PAYABLE", "ACCOUNT_RECEIVABLE").contains(type.toLowerCase())) {
+			throw new NoSuchElementException("Invalid invoice type value.");
+		} else {
+			this.type = type.toUpperCase();
+		}
+	}
 }

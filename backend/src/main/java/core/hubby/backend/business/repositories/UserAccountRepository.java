@@ -3,15 +3,16 @@ package core.hubby.backend.business.repositories;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import core.hubby.backend.business.entities.UserAccount;
 import core.hubby.backend.business.repositories.custom.CustomizedUserAccountRepository;
-import core.hubby.backend.core.data.BaseJpaRepository;
 
 @Repository
-public interface UserAccountRepository extends BaseJpaRepository<UserAccount, UUID>, CustomizedUserAccountRepository {
+public interface UserAccountRepository extends JpaRepository<UserAccount, UUID>, CustomizedUserAccountRepository {
     /**
      * Checks if all users specified by their UUIDs in the provided set exist in the database.
      *

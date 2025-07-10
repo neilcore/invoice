@@ -3,6 +3,7 @@ package core.hubby.backend.business.entities;
 import java.io.Serializable;
 import java.util.UUID;
 
+import core.hubby.backend.tax.entities.TaxType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -39,12 +40,12 @@ public class LineItems implements Serializable {
 	
 	// Shouldn't be include at any JSON response -- FOR NOW
 	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "invoice_id", referencedColumnName = "id", nullable = false)
+	@JoinColumn(name = "invoice_id", referencedColumnName = "invoice_id", nullable = false)
 	@NotNull(message = "Invoice cannot be null")
 	private Invoice invoice;
 	
 	// A clear explanation of the product or service provided.
-	@Column(name = "description", nullable = false)
+	@Column(name = "lineitem_description", nullable = false)
 	@NotBlank(message = "Description cannot be blank")
 	private String description;
 	
@@ -67,24 +68,22 @@ public class LineItems implements Serializable {
 	@NotBlank(message = "Account code cannot be blank")
 	private String accountCode;
 	
-	@Column(name = "line_amount_type", nullable = false)
-	private String lineAmountType;
-	
 	// This is automatically calculated
 	// total value for that specific line item -- LineAmount = Quantity * UnitAmount
 	@Column(name = "line_amount", nullable = false)
 	@NotNull(message = "Line amount cannot be blank")
 	private Double lineAmount;
 	
+	// TODO - create this column - create tax type first
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "tax_type", referencedColumnName = "id")
 	private TaxType taxType;
 	
+	// auto-calculated
 	@Column(name = "tax_amount", nullable = false)
 	@NotNull(message = "Tax amount cannot be null")
 	private Double taxAmount;
 	
-	// TODO - create lineItems migration script
 	@Column(name = "discount_rate")
 	private Integer discountRate;
 }

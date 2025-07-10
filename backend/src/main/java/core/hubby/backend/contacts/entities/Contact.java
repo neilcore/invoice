@@ -2,19 +2,18 @@ package core.hubby.backend.contacts.entities;
 
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.TimeZoneStorage;
 import org.hibernate.annotations.TimeZoneStorageType;
-import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
 
-import core.hubby.backend.business.entities.PaymentTerms;
-import io.hypersistence.utils.hibernate.type.json.JsonType;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -43,10 +42,11 @@ public class Contact implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id @GeneratedValue(strategy = GenerationType.UUID)
+	@Column(name = "contact_id", nullable = false, unique = true)
 	private UUID id;
 	
 	// Full name of contact / organization
-	@Column(name = "name", nullable = false)
+	@Column(name = "name", nullable = false, unique = true)
 	@NotBlank(message = "Name cannot be blank")
 	private String name;
 	
@@ -72,7 +72,6 @@ public class Contact implements Serializable {
 	@Column(name = "company_number")
 	private String companyNumber;
 	
-	// TODO - create migration script for this
 	@Column(name = "default_discount")
 	private Integer defaultDiscount;
 	
@@ -96,18 +95,18 @@ public class Contact implements Serializable {
 	
 	
 	// Only shown in GET response, not in POST/PUT
-	@Type(JsonType.class)
-	@Column(name = "address")
+	@JdbcTypeCode(SqlTypes.JSON_ARRAY)
+	@Column(name = "address", columnDefinition = "jsonb")
 	private Map<String, Object> address;
 	
 	// Only shown in GET response, not in POST/PUT
-	@Type(JsonType.class)
-	@Column(name = "phone")
+	@JdbcTypeCode(SqlTypes.JSON_ARRAY)
+	@Column(name = "phone", columnDefinition = "jsonb")
 	private Map<String, Object> phone;
 	
 	// Returned in GET response, not in POST/PUT
-	@ManyToOne(cascade = jakarta.persistence.CascadeType.ALL)
-	@JoinColumn(name = "payment_terms", referencedColumnName = "id")
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@JoinColumn(name = "payment_terms_id", referencedColumnName = "payment_term_id")
 	private PaymentTerms paymentTerms;
 	
 	// Returned in GET response, not in POST/PUT

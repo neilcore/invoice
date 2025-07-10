@@ -3,17 +3,16 @@ package core.hubby.backend.business.repositories;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.data.jpa.repository.NativeQuery;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import core.hubby.backend.business.entities.Organization;
 import core.hubby.backend.business.entities.UserAccount;
-import core.hubby.backend.core.data.BaseJpaRepository;
 
 @Repository
-public interface OrganizationRepository extends BaseJpaRepository<Organization, UUID> {
+public interface OrganizationRepository extends JpaRepository<Organization, UUID> {
 	
 	/* INFO: Tax basis */
 	static final String TAX_BASIS_CASH = "CASH";
@@ -68,5 +67,13 @@ public interface OrganizationRepository extends BaseJpaRepository<Organization, 
 			nativeQuery = true
 	)
 	Optional<UserAccount> findOrganizationSubscriber(UUID organizationId);
+	
+	/**
+	 * This will retrieve lineAmountType value using organization's value
+	 * @param id - accepts {@linkplain java.util.UUID} object type
+	 * @return - returns a {@linkplain java.util.Optional} object type.
+	 */
+    @Query("SELECT org.organizationType FROM Organization org WHERE org.id = :id")
+    Optional<String> findLineAmountType(@Param("id") UUID id);
 	
 }

@@ -1,60 +1,43 @@
 package core.hubby.backend.business.entities;
-
-import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.Locale.IsoCountryCode;
-import java.util.UUID;
+import java.util.Map;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Entity
-@Table(name = "organization_name_update", schema = "app_sc")
+@Embeddable
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 @Builder
-@Data
-public class OrganizationNameUpdate implements Serializable {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+public class OrganizationNameUpdate {
 	
-	@Id @GeneratedValue(strategy = GenerationType.UUID)
-	private UUID id;
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(name = "former_name", columnDefinition = "jsonb")
+	private Map<String, String> formerName;
 	
-	@OneToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "organization", nullable = false, referencedColumnName = "id")
-	private Organization organization;
-	
-	@Column(name = "organization_created_date", nullable = false)
-	@NotNull(message = "organizationCreatedDate cannot be null.")
-	@Builder.Default
-	@DateTimeFormat(iso = ISO.DATE)
-	private LocalDate organizationCreatedDate = LocalDate.now();
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(name = "current_name", columnDefinition = "jsonb")
+	private Map<String, String> currentName;
 	
 	@Column(name = "updated_date")
 	@DateTimeFormat(iso = ISO.DATE)
 	private LocalDate updatedDate;
 	
 	@Column(name = "is_updatable", nullable = false)
-	@NotBlank(message = "organizationNameUpdatable")
+	@NotNull(message = "isUpdatable cannot be null.")
 	@Builder.Default
 	private boolean isUpdatable = true;
 	

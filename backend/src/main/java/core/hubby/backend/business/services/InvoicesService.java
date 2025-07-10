@@ -5,31 +5,26 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Service;
 
 import core.hubby.backend.business.dto.param.CreateInvoiceRequest;
 import core.hubby.backend.business.entities.Invoice;
-import core.hubby.backend.business.entities.InvoiceType;
 import core.hubby.backend.business.entities.LineItems;
 import core.hubby.backend.business.repositories.InvoiceRepository;
-import core.hubby.backend.business.repositories.InvoiceTypeRepository;
 import core.hubby.backend.business.repositories.LineItemRepository;
-import core.hubby.backend.business.repositories.TaxTypeRepository;
+import core.hubby.backend.business.repositories.OrganizationRepository;
 import core.hubby.backend.contacts.entities.Contact;
-import core.hubby.backend.contacts.repositories.ContactRepository;
 import core.hubby.backend.contacts.services.ContactService;
+import core.hubby.backend.tax.repositories.TaxTypeRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class InvoicesService {
+	private final OrganizationRepository organizationRepository;
 	private final InvoiceRepository invoiceRepository;
-	private final InvoiceTypeRepository invoiceTypeRepository;
-	private final ContactRepository contactRepository;
 	private final ContactService contactService;
 	private final TaxTypeRepository taxTypeRepository;
-	private final LineItemRepository lineItemRepository;
 	
 	/**
 	 * This method will retrieve an invoice object
@@ -53,23 +48,12 @@ public class InvoicesService {
 		return findInvoice.get();
 	}
 	
-	public void createNewInvoiceObject(CreateInvoiceRequest request) {
+	public void createNewInvoiceObject(CreateInvoiceRequest request, UUID organizationId) {
 		// Create new Invoice object
 		Invoice invoice = retrieveInvoiceObject(null);
 		
-		/**
-		 * Retrieve and set invoice type object
-		 */
-		Optional<InvoiceType> findInvoiceType = invoiceTypeRepository.findById(request.invoiceType());
-		InvoiceType getInvoiceType = null;
-		
-		if(findInvoiceType.isEmpty()) {
-			throw new NoSuchElementException("Invoice type object cannot be found");
-		} else {
-			getInvoiceType = findInvoiceType.get();
-		}
-		
-		invoice.setInvoiceType(getInvoiceType);
+		// Set the invoice type
+		invoice.setType(request.invoiceType());
 		
 		// Set invoice contact
 		Optional<Contact> getContactObject = contactService.findOrCreate(request.contact());
@@ -79,17 +63,27 @@ public class InvoicesService {
 			invoice.setContact(getContactObject.get());
 		}
 		
-		setLineItems(invoice, request.lineItems(), request.lineAmountType(), getContactObject.get().getDefaultDiscount());
+		setLineItems(
+				invoice,
+				request.lineItems(),
+				request.lineAmountType(),
+				getContactObject.get().getDefaultDiscount(),
+				organizationId
+		);
 		calculateInvoice(invoice);
 		
 		invoice.setDate(request.date());
 		invoice.setDueDate(request.dueDate());
-		invoice.setStatus(request.status().isEmpty() ? "DRAFT" : request.status()); // "DRAFT" is the default status
+		invoice.setStatus(request.status().isEmpty() ? InvoiceRepository.INVOICE_STATUS_DRAFT : request.status()); // "DRAFT" is the default status
 		invoice.setReference(request.reference());
 		
 		save(invoice);
 	}
 	
+	/**
+	 * This method will persist the invoice object to the database.
+	 * @param invoice - accepts {@linkplain Invoice} object type.
+	 */
 	private void save(Invoice invoice) {
 		invoiceRepository.save(invoice);
 	}
@@ -106,26 +100,31 @@ public class InvoicesService {
 			Invoice invoice,
 			Set<CreateInvoiceRequest.LineItems> lineItemsSet,
 			String lineAmountTypeRequest,
-			Integer customerDefaultDiscount
+			Integer customerDefaultDiscount,
+			UUID organizationId
 	) {
 		/**
-		 * In Java, when you use a variable from an outer scope within a
-		 * lambda expression or an anonymous inner class, that variable must
-		 * be final or "effectively final." A variable is effectively final
-		 * if its value is never changed after it is initialized.
-		 * In this code, lineAmountType is initialized, but then its value is potentially
-		 * reassigned within the if-else if-else block. Even though in any given
-		 * execution path it will only be assigned once, the compiler sees the
-		 * potential for multiple assignments, making it not effectively final.
+		 * Set lineAmountTypeRequest.
+		 * If lineAmountTypeRequest is not specified then use the organization's
+		 * DefaultPurchasesTax (If specified)
 		 */
-		final String lineAmountType;
-		if (Objects.equals(lineAmountTypeRequest, LineItemRepository.LINE_AMOUNT_TYPE_EXCLUSIVE)) {
-			lineAmountType = LineItemRepository.LINE_AMOUNT_TYPE_EXCLUSIVE;
-		} else if (Objects.equals(lineAmountTypeRequest, LineItemRepository.LINE_AMOUNT_TYPE_INCLUSIVE)) {
-			lineAmountType = LineItemRepository.LINE_AMOUNT_TYPE_INCLUSIVE;
-		} else {
-			lineAmountType = LineItemRepository.LINE_AMOUNT_TYPE_NO_TAX;
+		String lineAmountType = null;
+		Optional<String> organizationDefaultTaxPurchase = 
+				organizationRepository.findLineAmountType(organizationId);
+		
+		if (!lineAmountTypeRequest.isBlank() && !lineAmountTypeRequest.isEmpty()) {
+			lineAmountType = lineAmountTypeRequest;
+		} else if (lineAmountTypeRequest.isBlank() || lineAmountTypeRequest.isEmpty()) {
+			if (organizationDefaultTaxPurchase.isPresent()) {
+				lineAmountType = organizationDefaultTaxPurchase.get();
+			} else {
+				// Type EXCLUSIVE is the default if both lineAmountTypeRequest and 
+				// organizationDefaultTaxPurchase is not specified
+				lineAmountType = InvoiceRepository.INVOICE_LINE_AMOUNT_TYPE_EXCLUSIVE;
+			}
 		}
+		
+		invoice.setLineAmountTypes(lineAmountType);
 		
 		Set<LineItems> lineItems = lineItemsSet
 				.stream()
@@ -133,9 +132,8 @@ public class InvoicesService {
 					LineItems createLineItem = new LineItems();
 					/**
 					 * Check if line item discount rate is specified.
-					 * If not check if customer's default discount rate is specified.
+					 * If not, check if customer's default discount rate is specified.
 					 */
-		
 					Integer discountRateIfExists = lineItem.discountRate() != null
 							|| lineItem.discountRate() != 0 ?
 							lineItem.discountRate() : customerDefaultDiscount != null ?
@@ -146,7 +144,6 @@ public class InvoicesService {
 							: lineItem.quantity() * lineItem.unitAmount();
 					
 					createLineItem.setDiscountRate(discountRateIfExists);
-					createLineItem.setLineAmountType(lineAmountType);
 					createLineItem.setDescription(lineItem.description());
 					createLineItem.setQuantity(lineItem.quantity());
 					createLineItem.setUnitAmount(lineItem.unitAmount());
@@ -161,7 +158,26 @@ public class InvoicesService {
 		return invoice;
 	}
 	
+	/**
+	 * This method will calculate the invoice's subTotal,
+	 * totalTax, and grandTotal
+	 * @param invoice - accepts {@linkplain Invoice} object type
+	 * @return - returns modified {@linkplain Invoice} object
+	 */
 	private Invoice calculateInvoice(Invoice invoice) {
+		Double subTotal = invoice.getLineItems().stream()
+				.mapToDouble(lineAmount -> lineAmount.getLineAmount())
+				.sum();
+		
+		invoice.setSubTotal(subTotal);
+		
+		// TODO need to add totalTax here
+		// TODO need to add grandTotal here
+		return invoice;
+	}
+	
+	// TODO - work on setting ledger account
+	private Invoice setLineItemLedgerAccount(Invoice invoice) {
 		return invoice;
 	}
 	

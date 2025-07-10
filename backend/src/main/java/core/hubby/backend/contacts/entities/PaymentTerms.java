@@ -1,4 +1,4 @@
-package core.hubby.backend.business.entities;
+package core.hubby.backend.contacts.entities;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -9,25 +9,31 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
-@Table(name = "organization_type", schema = "app_sc")
-@Getter
-@Setter
+@Entity(name = "ContactPaymentTerms")
+@Table(name = "payment_terms", schema = "app_sc")
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrganizationType implements Serializable {
+@Getter
+@Setter
+public class PaymentTerms implements Serializable {
+	/**
+	 * 
+	 */
 	private static final long serialVersionUID = 1L;
-
+	
 	@Id @GeneratedValue(strategy = GenerationType.UUID)
+	@Column(name = "payment_term_id", nullable = false, unique = true)
 	private UUID id;
 	
-	@NotBlank(message = "Name cannot be blank")
-	@Column(name = "name", nullable = false, unique = true)
-	private String name;
+	@Column(name = "label", nullable = false, unique = true)
+	@NotNull(message = "label cannot be null.")
+	private String label;
+	
+	private String description;
 }

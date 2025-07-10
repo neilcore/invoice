@@ -5,26 +5,25 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import org.aspectj.weaver.patterns.ThisOrTargetAnnotationPointcut;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
 public record CreateInvoiceRequest(
 		@NotNull(message = "invoiceType component cannot be null.")
-		UUID invoiceType,
+		String invoiceType,
 		@NotNull(message = "contact component cannot be null")
 		Map<String, Object> contact,
-		Set<LineItems> lineItems,
 		@NotNull(message = "lineAmounType component cannot be null")
 		@Pattern(regexp = "^[A-Z](?:[A-Z]|_[A-Z])*$", message = "Invalid value for lineAmountType component.")
 		String lineAmountType,
+		@NotNull(message = "lineItems component cannot be null.")
+		Set<LineItems> lineItems,
 		@NotNull(message = "date component cannot be null.")
 		LocalDate date,
 		@Future(message = "Invalid value for dueDate component.")
@@ -34,10 +33,10 @@ public record CreateInvoiceRequest(
 		String reference
 ) {
 	public CreateInvoiceRequest(
-			UUID invoiceType,
+			String invoiceType,
 			Map<String, Object> contact,
-			Set<LineItems> lineItems,
 			String lineAmountType,
+			Set<LineItems> lineItems,
 			LocalDate date,
 			LocalDate dueDate,
 			String status,

@@ -87,7 +87,7 @@ public class AuthController {
         		.firstName(signupRequest.firstName())
         		.lastName(signupRequest.lastName())
         		.email(signupRequest.email())
-        		.password(passwordEncoder.encode(signupRequest.password()))
+        		.accountPassword(passwordEncoder.encode(signupRequest.password()))
         		.roles(Roles.NONE) // By default user account don't have a role yet
         		.build();
 
