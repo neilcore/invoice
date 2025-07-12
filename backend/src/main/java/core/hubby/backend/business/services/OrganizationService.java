@@ -1,14 +1,22 @@
 package core.hubby.backend.business.services;
 import org.springframework.stereotype.Service;
+
 import core.hubby.backend.business.dto.param.OrganizationCreateRequest;
 import core.hubby.backend.business.dto.vo.OrganizationDetailsResponse;
 import core.hubby.backend.business.entities.Organization;
 import core.hubby.backend.business.entities.OrganizationType;
+import core.hubby.backend.business.entities.embedded.DefaultCurrency;
 import core.hubby.backend.business.repositories.OrganizationRepository;
 import core.hubby.backend.business.repositories.OrganizationTypeRepository;
+import core.hubby.backend.core.dto.CountriesDTO;
+import core.hubby.backend.core.exception.CountryNotFoundException;
+import core.hubby.backend.core.helper.CountryService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -25,6 +33,7 @@ public class OrganizationService {
 	private final OrganizationRepository organizationRepository;
 	private final OrganizationTypeRepository organizationTypeRepository;
 	private final UserAccountService userAccountService;
+	private final CountryService countriesApiHelper;
 	
 	static {
 		/**
@@ -140,9 +149,18 @@ public class OrganizationService {
 			OrganizationCreateRequest.ContactDetails contacts,
 			Organization organization
 	) {
+		/**
+		 * Validate country code and set default currency
+		 */
+		DefaultCurrency setDefaultCurrency = new DefaultCurrency();
+		if(!countriesApiHelper.validateCountryCode(contacts.countryCode())) {
+			throw new CountryNotFoundException(contacts.countryCode());
+		}
+		setDefaultCurrency = countriesApiHelper.returnCurrency(contacts.countryCode());
 		
 		organization.setContactDetails(
-				contacts.countryCode(), // TODO - need to validated country code
+				contacts.countryCode(),
+				setDefaultCurrency,
 				contacts.address(),
 				contacts.phoneNo(),
 				contacts.email(),

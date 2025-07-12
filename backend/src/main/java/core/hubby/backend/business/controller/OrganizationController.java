@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,6 +21,10 @@ import core.hubby.backend.business.services.OrganizationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * x-organization-id header is required for
+ * accessing existing organization entity.
+ */
 @RestController
 @RequestMapping("api/v1/business/organization/")
 @RequiredArgsConstructor
@@ -40,7 +45,8 @@ public class OrganizationController {
 	 */
 	@PutMapping("update/{id}")
 	public ResponseEntity<OrganizationDetailsResponse> updateOrganization(
-			@PathVariable("id") UUID id,
+			@RequestHeader("x-organization-id") UUID xOrganizationHeaderId,
+			@PathVariable(name = "id") UUID id,
 			@Valid @RequestBody OrganizationCreateRequest data
 	) {
 		return null;

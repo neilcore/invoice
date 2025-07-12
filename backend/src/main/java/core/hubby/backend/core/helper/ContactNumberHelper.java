@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ContactNumberHelper {
 	private final ObjectMapper objectMapper;
-	private final CountriesApiHelper countriesApiHelper;
+	private final CountryService countriesApiHelper;
 	private static final Set<String> phoneTypes = new HashSet<>();
 	private static PhoneNumberUtil UTIL = null;
 	
@@ -53,11 +53,13 @@ public class ContactNumberHelper {
 	
 	private PhoneNumber parsePhoneNumber(String phoneNo, String country) {
 		// Validate the country
-		if (!countriesApiHelper.getTwoLetterCountryCode().contains(country)) {
-			throw new IllegalArgumentException("Country code " + country + " cannot be found");
-		}
+//		if (!countriesApiHelper.getTwoLetterCountryCode().contains(country)) {
+//			throw new IllegalArgumentException("Country code " + country + " cannot be found");
+//		}
+//		
+//		return transformPhoneNumber(phoneNo, country);
 		
-		return transformPhoneNumber(phoneNo, country);
+		return null;
 	}
 	
 	/**

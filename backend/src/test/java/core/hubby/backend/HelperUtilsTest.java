@@ -1,40 +1,24 @@
 package core.hubby.backend;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import static org.assertj.core.api.Assertions.*;
-import core.hubby.backend.core.dto.CountriesApiDTO;
-import core.hubby.backend.core.helper.CountriesApiHelper;
+
+import core.hubby.backend.business.entities.embedded.DefaultCurrency;
+import core.hubby.backend.core.helper.CountryService;
 
 @SpringBootTest
 public class HelperUtilsTest {
 	
 	@Autowired
-	private CountriesApiHelper countriesApiHelper;
+	private CountryService countriesApiHelper;
 	
 	@Test
-	public void itShouldQueryCountriesAPI() {
-		/**
-		 * This should retrieve a list of countries in
-		 * @return - List<CountriesApiDTO> object of type
-		 */
-		List<CountriesApiDTO> willQueryListOfCountries = 
-				countriesApiHelper.retrieveCountriesAPI();
+	public void itShouldReturnCountryCurrency() {
+		DefaultCurrency mz = countriesApiHelper
+				.returnCurrency("PH");
 		
-		System.out.println(willQueryListOfCountries);
-		
-		/**
-		 * This should retrieve a list of two letter country code and 
-		 * @return - Set<Map<String, String>> object of type
-		 */
-		Set<Map<String, String>> retrieveSetOfTwoLetterCountryCode =
-				countriesApiHelper.getTwoLetterCountryCode();
-		
-		System.out.println(retrieveSetOfTwoLetterCountryCode);
+		System.out.println(mz);
 	}
 }

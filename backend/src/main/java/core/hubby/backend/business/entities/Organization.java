@@ -9,10 +9,11 @@ import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import core.hubby.backend.business.common.ExternalLinks;
-import core.hubby.backend.business.common.PhoneDetails;
+import core.hubby.backend.business.entities.embedded.DefaultCurrency;
+import core.hubby.backend.business.entities.embedded.ExternalLinks;
 import core.hubby.backend.business.entities.embedded.OrganizationUserInvites;
 import core.hubby.backend.business.entities.embedded.OrganizationUsers;
+import core.hubby.backend.business.entities.embedded.PhoneDetails;
 import core.hubby.backend.business.enums.Status;
 import core.hubby.backend.core.audit.CreatedDate;
 import core.hubby.backend.tax.entities.TaxDetails;
@@ -95,15 +96,19 @@ public class Organization implements Serializable {
 	@NotBlank(message = "Country is mandatory")
 	private String country;
 	
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(name = "default_currency", nullable = false, columnDefinition = "jsonb")
+	@NotNull(message = "defaultCurrency cannot be null.")
+	private DefaultCurrency defaultCurrency;
+	
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "organization_type", nullable = false)
 	@NotNull(message = "The type where the organization belong to is required")
 	private OrganizationType organizationType;
 	
-	/* Contact Details */	
+	/* Contact Details */
 	@JdbcTypeCode(SqlTypes.JSON_ARRAY)
 	@Column(name = "phone_no", nullable = false, columnDefinition = "jsonb[]")
-	@NotNull(message = "Organization phone number is required")
 	private LinkedHashSet<PhoneDetails> phoneNo;
 	
 	@Column(name = "email", nullable = false)
@@ -116,10 +121,6 @@ public class Organization implements Serializable {
 	
 	@OneToOne(fetch = FetchType.LAZY, mappedBy = "organization")
 	private TaxDetails taxDetails;
-	
-	@NotBlank(message = "Default currency is mandatory")
-	@Column(name = "default_currency", nullable = false)
-	private String defaultCurrency;
 	
 	@NotBlank(message = "timeZone is required.")
 	@Column(name = "time_zone")
@@ -182,6 +183,7 @@ public class Organization implements Serializable {
 	
 	public void setContactDetails(
 			String countryCode,
+			DefaultCurrency defaultCurrency,
 			Set<Map<String, String>> address,
 			LinkedHashSet<PhoneDetails> phones,
 			String email,
@@ -189,6 +191,7 @@ public class Organization implements Serializable {
 			Set<ExternalLinks> externalLinks
 	) {
 		this.setCountry(countryCode);
+		this.setDefaultCurrency(defaultCurrency);
 		this.setAddress(address);
 		this.setPhoneNo(phones);
 		this.setEmail(email);
