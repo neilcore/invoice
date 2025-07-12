@@ -8,15 +8,10 @@ import core.hubby.backend.business.entities.OrganizationType;
 import core.hubby.backend.business.entities.embedded.DefaultCurrency;
 import core.hubby.backend.business.repositories.OrganizationRepository;
 import core.hubby.backend.business.repositories.OrganizationTypeRepository;
-import core.hubby.backend.core.dto.CountriesDTO;
 import core.hubby.backend.core.exception.CountryNotFoundException;
 import core.hubby.backend.core.helper.CountryService;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -25,30 +20,22 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service("OrganizationService")
-@RequiredArgsConstructor
 public class OrganizationService {
-	private static final Set<String> externalLinks = new HashSet<>();
-	private static final Set<String> paymentTermsElements = new HashSet<>();
-	
 	private final OrganizationRepository organizationRepository;
 	private final OrganizationTypeRepository organizationTypeRepository;
 	private final UserAccountService userAccountService;
-	private final CountryService countriesApiHelper;
+	private final CountryService countryService;
 	
-	static {
-		/**
-		 * Add values to externalLinks
-		 */
-		externalLinks.add(OrganizationRepository.EXTERNAL_LINK_FACEBOOK);
-		externalLinks.add(OrganizationRepository.EXTERNAL_LINK_TIKTOK);
-		externalLinks.add(OrganizationRepository.EXTERNAL_LINK_INSTAGRAM);
-		externalLinks.add(OrganizationRepository.EXTERNAL_LINK_WEBSITE);
-		
-		/**
-		 * paymentTermsElements
-		 */
-		paymentTermsElements.add(OrganizationRepository.PAYMENT_TERMS_BILLS);
-		paymentTermsElements.add(OrganizationRepository.PAYMENT_TERMS_SALES);
+	public OrganizationService(
+			OrganizationRepository organizationRepository,
+			OrganizationTypeRepository organizationTypeRepository,
+			UserAccountService userAccountService,
+			CountryService countryService
+	) {
+		this.organizationRepository = organizationRepository;
+		this.organizationTypeRepository = organizationTypeRepository;
+		this.userAccountService = userAccountService;
+		this.countryService = countryService;
 	}
 	
 	/**
@@ -153,10 +140,10 @@ public class OrganizationService {
 		 * Validate country code and set default currency
 		 */
 		DefaultCurrency setDefaultCurrency = new DefaultCurrency();
-		if(!countriesApiHelper.validateCountryCode(contacts.countryCode())) {
+		if(!countryService.validateCountryCode(contacts.countryCode())) {
 			throw new CountryNotFoundException(contacts.countryCode());
 		}
-		setDefaultCurrency = countriesApiHelper.returnCurrency(contacts.countryCode());
+		setDefaultCurrency = countryService.returnCurrency(contacts.countryCode());
 		
 		organization.setContactDetails(
 				contacts.countryCode(),

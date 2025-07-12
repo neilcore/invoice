@@ -1,6 +1,6 @@
 package core.hubby.backend.core.helper;
 
-import java.time.chrono.IsoChronology;
+import java.security.PublicKey;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -15,25 +15,32 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 import core.hubby.backend.core.dto.PhoneDetail;
-import lombok.RequiredArgsConstructor;
+import core.hubby.backend.core.exception.CountryNotFoundException;
+import jakarta.annotation.PostConstruct;
 
 @Component
-@RequiredArgsConstructor
 public class ContactNumberHelper {
 	private final ObjectMapper objectMapper;
-	private final CountryService countriesApiHelper;
-	private static final Set<String> phoneTypes = new HashSet<>();
-	private static PhoneNumberUtil UTIL = null;
+	private final CountryService countryService;
+	private Set<String> phoneTypes;
+	private PhoneNumberUtil UTIL;
 	
-	static {
-		UTIL =  PhoneNumberUtil.getInstance();
-		
-		phoneTypes.add("DEFAULT");
-		phoneTypes.add("DDI");
-		phoneTypes.add("MOBILE");
-		phoneTypes.add("FAX");
+	public ContactNumberHelper(ObjectMapper mapper, CountryService countryService) {
+		this.objectMapper = mapper;
+		this.countryService = countryService;
 	}
 	
+	@PostConstruct
+	private void init() {
+		phoneTypes = Set.of("DEFAULT", "DDI", "MOBILE", "FAX");
+		UTIL = PhoneNumberUtil.getInstance();
+	}
+	
+	/**
+	 * This method will check the phone type
+	 * @param type - {@linkplain java.util.String} object type
+	 * @return - boolean
+	 */
 	private boolean checkPhoneType(String type) {
 		if (phoneTypes.contains(type.toUpperCase())) return true;
 		return false;
@@ -51,15 +58,17 @@ public class ContactNumberHelper {
 		return parsedPhoneNumber;
 	}
 	
+	/**
+	 * Validate country request
+	 * @param phoneNo - accepts {@linkplain java.util.String} object type
+	 * @param country - accepts {@linkplain java.util.String} object type
+	 * @return - {@linkplain PhoneNumber} object type
+	 */
 	private PhoneNumber parsePhoneNumber(String phoneNo, String country) {
-		// Validate the country
-//		if (!countriesApiHelper.getTwoLetterCountryCode().contains(country)) {
-//			throw new IllegalArgumentException("Country code " + country + " cannot be found");
-//		}
-//		
-//		return transformPhoneNumber(phoneNo, country);
-		
-		return null;
+		if (!countryService.validateCountryCode(country)) {
+			throw new CountryNotFoundException(country);
+		}
+		return transformPhoneNumber(phoneNo, country);
 	}
 	
 	/**
