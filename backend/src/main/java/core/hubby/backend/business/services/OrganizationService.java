@@ -209,6 +209,7 @@ public class OrganizationService {
 		 */
 		OrganizationDetailsResponse.BasicInformation basicInformation =
 				new OrganizationDetailsResponse.BasicInformation(
+						org.getProfileImage(),
 						org.getDisplayName(),
 						org.getLegalName(),
 						org.getOrganizationDescription(),

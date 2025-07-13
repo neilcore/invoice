@@ -22,6 +22,7 @@ public record OrganizationDetailsResponse (
 		Set<Users> organizationUsers
 ) {	
 	public record BasicInformation(
+			String profileImage,
 			@NotBlank(message = "displayName component cannot be blank.")
 			String displayName,
 			@NotBlank(message = "legalName component cannot be blank.")
