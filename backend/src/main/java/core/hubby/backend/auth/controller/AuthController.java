@@ -30,7 +30,7 @@ import core.hubby.backend.business.repositories.UserAccountRepository;
 import core.hubby.backend.business.repositories.UserAccountSettingsRepository;
 import core.hubby.backend.business.services.UserAccountService;
 import core.hubby.backend.core.api.error.ApiError;
-import core.hubby.backend.core.helper.ContactNumberHelper;
+import core.hubby.backend.core.helper.PhoneNumberService;
 import lombok.RequiredArgsConstructor;
 
 @RequestMapping("api/auth/")
@@ -42,7 +42,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final UserAccountRepository userRepository;
     private final UserAccountService userAccountService;
-    private final ContactNumberHelper phoneService;
+    private final PhoneNumberService phoneService;
     
     @PostMapping("signin")
     public ResponseEntity<?> signin(@RequestBody LoginRequest loginRequest) {

@@ -23,6 +23,7 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import core.hubby.backend.core.exception.CountryNotFoundException;
+import core.hubby.backend.core.exception.PhoneTypeNotFoundException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 
@@ -151,5 +152,11 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     String countryNotFoundHandler(CountryNotFoundException ex) {
         return ex.getMessage();
-      }
+    }
+    
+    @ExceptionHandler({ PhoneTypeNotFoundException.class })
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    String phoneTypeNotFoundHandler(PhoneTypeNotFoundException ex) {
+        return ex.getMessage();
+    }
 }

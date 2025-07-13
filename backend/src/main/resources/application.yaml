@@ -42,10 +42,9 @@ spring:
          api:
             website: "https://restcountries.com/v3.1"
          default_credentials:
-            default_first_name: "Brock"
-            default_last_name: "Rumlow"
-            default_email: "sample123@sample.com"
+            default_first_name: "Brian"
+            default_last_name: "Tmblr"
+            default_email: "defaultEmail1999@sample.com"
             default_password: "password123"
-            default_phone_no: "09262689148"
 server:
    port: 8900

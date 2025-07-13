@@ -54,6 +54,10 @@ public class Organization implements Serializable {
 	@Id @GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
 	
+	@Column(name = "profile_image")
+	@NotNull(message = "profile_image")
+	private String profileImage;
+	
 	@ElementCollection
 	@CollectionTable(
 			schema = "app_sc",
@@ -93,7 +97,7 @@ public class Organization implements Serializable {
 	
 	// e.g., "US", "AU", "NZ", "GB"
 	@Column(nullable = false)
-	@NotBlank(message = "Country is mandatory")
+	@NotNull(message = "country cannot be null.")
 	private String country;
 	
 	@JdbcTypeCode(SqlTypes.JSON)

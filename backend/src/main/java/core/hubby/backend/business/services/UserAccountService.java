@@ -82,7 +82,7 @@ public class UserAccountService {
 	
 	/**
 	 * Add advisor to organization object
-	 * @param organization
+	 * @param organization - accepts {@linkplain Organization} object type.
 	 */
 	public void addAdvisor(Organization organization) {
 		OrganizationUsers advisor = addOrganizationAdvisor();
