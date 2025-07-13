@@ -24,6 +24,7 @@ public record OrganizationCreateRequest(
 	 * Basic information for organization
 	 */
 	public record BasicInformation(
+			String profileImage,
 			@NotBlank(message = "displayName component cannot be blank.")
 			String displayName,
 			String legalName,
@@ -32,11 +33,14 @@ public record OrganizationCreateRequest(
 			String organizationDescription
 	) {
 		public BasicInformation(
+				String profileImage,
 				String displayName,
 				String legalName,
 				UUID organizationType,
 				String organizationDescription
 		) {
+			this.profileImage = profileImage;
+			
 			this.displayName = displayName;
 			/**
 			 * If legalName is not provided. set the displayName
