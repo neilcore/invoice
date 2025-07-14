@@ -6,12 +6,12 @@ import core.hubby.backend.business.dto.vo.OrganizationDetailsResponse;
 import core.hubby.backend.business.entities.Organization;
 import core.hubby.backend.business.entities.OrganizationType;
 import core.hubby.backend.business.entities.embedded.DefaultCurrency;
-import core.hubby.backend.business.entities.embedded.PhoneDetails;
 import core.hubby.backend.business.repositories.OrganizationRepository;
 import core.hubby.backend.business.repositories.OrganizationTypeRepository;
+import core.hubby.backend.core.embedded.PhoneDetails;
 import core.hubby.backend.core.exception.CountryNotFoundException;
-import core.hubby.backend.core.helper.CountryService;
-import core.hubby.backend.core.helper.PhoneNumberService;
+import core.hubby.backend.core.service.CountryService;
+import core.hubby.backend.core.service.phone.PhoneService;
 import jakarta.transaction.Transactional;
 
 import java.util.LinkedHashSet;
@@ -28,20 +28,20 @@ public class OrganizationService {
 	private final OrganizationTypeRepository organizationTypeRepository;
 	private final UserAccountService userAccountService;
 	private final CountryService countryService;
-	private final PhoneNumberService phoneNumberService;
+	private final PhoneService phoneService;
 	
 	public OrganizationService(
 			OrganizationRepository organizationRepository,
 			OrganizationTypeRepository organizationTypeRepository,
 			UserAccountService userAccountService,
 			CountryService countryService,
-			PhoneNumberService phoneNumberService
+			PhoneService phoneService
 	) {
 		this.organizationRepository = organizationRepository;
 		this.organizationTypeRepository = organizationTypeRepository;
 		this.userAccountService = userAccountService;
 		this.countryService = countryService;
-		this.phoneNumberService = phoneNumberService;
+		this.phoneService = phoneService;
 	}
 	
 	/**
@@ -155,7 +155,7 @@ public class OrganizationService {
 		
 		// Validate phone numbers
 		LinkedHashSet<PhoneDetails> validatePhoneDetails =
-				phoneNumberService.validatePhoneDetails(contacts.phoneNo(), organization.getCountry());
+				phoneService.validatePhones(contacts.phoneNo(), Optional.of(organization.getCountry()));
 		
 		organization.setContactDetails(
 				contacts.countryCode(),

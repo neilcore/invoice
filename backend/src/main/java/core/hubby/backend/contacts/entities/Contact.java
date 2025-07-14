@@ -2,6 +2,7 @@ package core.hubby.backend.contacts.entities;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.UUID;
 
@@ -10,6 +11,7 @@ import org.hibernate.annotations.TimeZoneStorage;
 import org.hibernate.annotations.TimeZoneStorageType;
 import org.hibernate.type.SqlTypes;
 
+import core.hubby.backend.core.embedded.PhoneDetails;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,17 +30,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
-@Table(name = "contact")
+/**
+ * field @name is the only non optional attribute in this entity.
+ */
+@Entity(name = "Contact")
+@Table(name = "contacts")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Contact implements Serializable {
-	/**
-	 * Only name attribute is non optional.
-	 * This is useful for automatic contact creation when creating invoices
-	 */
 	private static final long serialVersionUID = 1L;
 
 	@Id @GeneratedValue(strategy = GenerationType.UUID)
@@ -50,7 +51,6 @@ public class Contact implements Serializable {
 	@NotBlank(message = "Name cannot be blank")
 	private String name;
 	
-	// These names are OPTIONAL
 	@Column(name = "first_name")
 	private String firstName;
 	
@@ -61,9 +61,9 @@ public class Contact implements Serializable {
 	@Email(message = "Email address must be valid")
 	private String emailAddress;
 	
-	@Column(name = "contact_number")
-	@NotBlank(message = "Contact number cannot be blank")
-	private String contactNumber;
+	@JdbcTypeCode(SqlTypes.JSON_ARRAY)
+	@Column(name = "phone_no", nullable = false, columnDefinition = "jsonb[]")
+	private LinkedHashSet<PhoneDetails> phoneNo;
 	
 	@Column(name = "account_number")
 	private String accountNumber;
@@ -98,11 +98,6 @@ public class Contact implements Serializable {
 	@JdbcTypeCode(SqlTypes.JSON_ARRAY)
 	@Column(name = "address", columnDefinition = "jsonb")
 	private Map<String, Object> address;
-	
-	// Only shown in GET response, not in POST/PUT
-	@JdbcTypeCode(SqlTypes.JSON_ARRAY)
-	@Column(name = "phone", columnDefinition = "jsonb")
-	private Map<String, Object> phone;
 	
 	// Returned in GET response, not in POST/PUT
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)

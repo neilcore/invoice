@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import core.hubby.backend.business.entities.embedded.ExternalLinks;
-import core.hubby.backend.business.entities.embedded.PhoneDetails;
+import core.hubby.backend.core.embedded.PhoneDetails;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

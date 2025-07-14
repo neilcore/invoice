@@ -1,5 +1,5 @@
 package core.hubby.backend.contacts.services;
-import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -9,11 +9,10 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import core.hubby.backend.contacts.dto.param.CreateContactParam;
-import core.hubby.backend.contacts.dto.vo.ContactVO;
 import core.hubby.backend.contacts.entities.Contact;
-import core.hubby.backend.contacts.entities.PaymentTerms;
 import core.hubby.backend.contacts.repositories.ContactRepository;
-import core.hubby.backend.contacts.repositories.PaymentTermsRepository;
+import core.hubby.backend.core.embedded.PhoneDetails;
+import core.hubby.backend.core.service.phone.ProxyPhoneService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
@@ -21,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ContactService {
 	private final ContactRepository contactRepository;
-	private final PaymentTermsRepository paymentTermsRepository;
+	private final ProxyPhoneService proxyPhoneService;
 	
 	/**
 	 * This method will retrieve or create new contact if it can't find one.
@@ -60,62 +59,26 @@ public class ContactService {
 		return getContact;
 	}
 	
-	public ContactVO createNewContact(CreateContactParam data) {
-		// Check contact details
-		filterContactDetails(data.address(), "ADDRESS");
-		filterContactDetails(data.phone(), "PHONE");
+	public void createContact(CreateContactParam request) {
+		Contact newContact = new Contact();
 		
-		Map<String, Object> addressData = new HashMap<>();
-		addressData.put("Addresses", data.address());
+		// name details
+		newContact.setName(request.name().name());
+		newContact.setFirstName(request.name().firstName());
+		newContact.setLastName(request.name().lastName());
+		newContact.setIsSupplier(request.name().isSupplier());
+		newContact.setIsCustomer(request.name().isCustomer());
 		
-		Map<String, Object> phones = new HashMap<>();
-		phones.put("Phones", data.phone());
+		// contact details
+		newContact.setEmailAddress(request.contactDetails().emailAddress());
 		
-		// Get payment terms entity
-		PaymentTerms paymentTerms = null;
-		if (data.paymentTerms() != null) {
-			paymentTerms = paymentTermsRepository.findById(data.paymentTerms())
-					.orElseThrow(() -> new IllegalArgumentException("Payment terms not found"));
-		}
+		// Validate phone numbers
+		LinkedHashSet<PhoneDetails> validatePhoneDetails =
+				proxyPhoneService.validatePhones(request.contactDetails().phone(), Optional.empty());
 		
-		Contact contact = Contact.builder()
-				.name(data.name())
-				.firstName(data.firstName())
-				.lastName(data.lastName())
-				.emailAddress(data.emailAddress())
-				.contactNumber(data.contactNumber())
-				.accountNumber(data.accountNumber())
-				.companyNumber(data.companyNumber())
-				.taxNumber(data.taxNumber())
-				.isSupplier(data.isSupplier() != null ? data.isSupplier() : false)
-				.isCustomer(data.isCustomer() != null ? data.isCustomer() : false)
-				.address(addressData)
-				.phone(phones)
-				.paymentTerms(paymentTerms)
-				.build();
+		newContact.setPhoneNo(validatePhoneDetails);
+		newContact.setCompanyNumber(request.contactDetails().companyNumber());
 		
-		Contact newContact = contactRepository.save(contact);
-		
-		Map<String, Object> addresses = new HashMap<>();
-		addresses.put("Addresses", newContact.getAddress().get("Addresses"));
-		System.out.println("Addresses: " + addresses);
-		
-		return null;
-//		return ContactVO.builder()
-//				.contactId(newContact.getId())
-//				.contactNumber(newContact.getContactNumber())
-//				.accountNumber(newContact.getAccountNumber())
-//				.contactStatus(newContact.getContactStatus())
-//				.name(newContact.getName())
-//				.firstName(newContact.getFirstName())
-//				.lastName(newContact.getLastName())
-//				.emailAddress(newContact.getEmailAddress())
-//				.companyNumber(newContact.getCompanyNumber())
-//				.taxNumber(newContact.getTaxNumber())
-//				.addresses(addresses)
-//				.isCustomer(newContact.getIsCustomer())
-//				.isSupplier(newContact.getIsSupplier())
-//				.build();
 	}
 	
 	private boolean ifContainsElement(String keyword, List<String> keywords) {

@@ -1,4 +1,4 @@
-package core.hubby.backend.business.entities.embedded;
+package core.hubby.backend.core.embedded;
 
 import java.io.Serializable;
 import jakarta.validation.constraints.NotNull;

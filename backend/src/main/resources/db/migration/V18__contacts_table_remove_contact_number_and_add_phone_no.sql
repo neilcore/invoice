@@ -1,0 +1,8 @@
+BEGIN;
+
+ALTER TABLE contacts
+DROP COLUMN contact_number,
+DROP COLUMN phone,
+ADD COLUMN phone_no JSONB[] NOT NULL;
+
+COMMIT;

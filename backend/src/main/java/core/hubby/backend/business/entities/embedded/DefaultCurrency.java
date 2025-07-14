@@ -21,8 +21,10 @@ public class DefaultCurrency implements Serializable {
 	private static final long serialVersionUID = 1L;
 	@NotNull(message = "name cannot be null.")
 	private String name;
+	
 	@NotNull(message = "symbol cannot be null.")
 	private String symbol;
+	
 	@NotNull(message = "currencyCode cannot be null.")
 	private String currencyCode;
 }
