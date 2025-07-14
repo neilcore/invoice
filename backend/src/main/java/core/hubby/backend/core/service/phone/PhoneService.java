@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Service
 @RequiredArgsConstructor
-public class PhoneService implements PhoneServiceInterface {
+public final class PhoneService implements PhoneServiceInterface {
 	private Set<String> phoneTypes;
 	private PhoneNumberUtil UTIL;
 	

@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Service
 @RequiredArgsConstructor
-public class ProxyPhoneService implements PhoneServiceInterface {
+public final class ProxyPhoneService implements PhoneServiceInterface {
 	private final PhoneService phoneService;
 	
 	@Override
