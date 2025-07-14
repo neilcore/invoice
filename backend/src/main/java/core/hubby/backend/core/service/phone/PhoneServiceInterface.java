@@ -6,5 +6,8 @@ import core.hubby.backend.core.embedded.PhoneDetails;
 
 public sealed interface PhoneServiceInterface permits
 PhoneService, ProxyPhoneService {
-	LinkedHashSet<PhoneDetails> validatePhones(LinkedHashSet<PhoneDetails> phones, Optional<String> countryCode);
+	LinkedHashSet<PhoneDetails> validatePhones(
+			LinkedHashSet<PhoneDetails> phones,
+			Optional<String> countryCode
+	);
 }
