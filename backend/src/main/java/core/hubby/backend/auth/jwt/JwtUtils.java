@@ -21,7 +21,7 @@ import io.jsonwebtoken.security.Keys;
 public class JwtUtils {
     @Value("${spring.app.jwt.secret}")
     private String jwtSecret;
-    @Value("${spring.app.jwt.expiration-ms}")
+    @Value("${spring.app.jwt.access-token}")
     private int jwtExpirationMs;
     
     public String extractUsername(String token) {

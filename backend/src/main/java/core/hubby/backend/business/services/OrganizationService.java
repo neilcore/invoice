@@ -133,9 +133,9 @@ public class OrganizationService {
 	 * Contact details include:
 	 * - countryCode
 	 * - addresses
-	 * - phoneDetails
+	 * - phone details
 	 * - email
-	 * - website
+	 * - web-site
 	 * - externalLinks
 	 * @param contacts - accepts {@linkplain OrganizationCreateRequest.ContactDetails} object type
 	 * @param organization - accepts {@linkplain Organization} object type.
@@ -148,7 +148,7 @@ public class OrganizationService {
 		 * Validate country code and set default currency
 		 */
 		DefaultCurrency setDefaultCurrency = new DefaultCurrency();
-		if(!countryService.validateCountryCode(contacts.countryCode())) {
+		if(!countryService.validateCountry(contacts.countryCode())) {
 			throw new CountryNotFoundException(contacts.countryCode());
 		}
 		setDefaultCurrency = countryService.returnCurrency(contacts.countryCode());
@@ -174,13 +174,10 @@ public class OrganizationService {
 	 * @return - returns {@linkplain OrganizationDetailsResponse} object type.
 	 */
 	public OrganizationDetailsResponse retrieveOrganizationById(UUID id) {
-		Optional<Organization> getOrganization = organizationRepository
-				.findById(id);
-		
-		if(getOrganization.isEmpty()) {
-			throw new IllegalArgumentException("Organization entity not found.");
-		}
-		return mapOrganizationDetails(getOrganization.get());
+		Organization getOrganization = organizationRepository.findById(id)
+				.orElseThrow(() -> new IllegalArgumentException("Organization entity not found."));
+
+		return mapOrganizationDetails(getOrganization);
 	}
 	
 	/**
@@ -189,12 +186,10 @@ public class OrganizationService {
 	 * @return OrganizationType object
 	 */
 	private OrganizationType getOrganizationType(UUID type) {
-		Optional<OrganizationType> getOrganizationType = organizationTypeRepository.findById(type);
+		OrganizationType getOrganizationType = organizationTypeRepository.findById(type)
+				.orElseThrow(() -> new IllegalArgumentException("Organization type not found"));
 		
-		if (getOrganizationType.isEmpty()) {
-			throw new IllegalArgumentException("Organization type not found");
-		}
-		return getOrganizationType.get();
+		return getOrganizationType;
 	}
 	
 	/**

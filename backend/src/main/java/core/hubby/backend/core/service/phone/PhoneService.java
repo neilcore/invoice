@@ -52,7 +52,7 @@ public final class PhoneService implements PhoneServiceInterface {
 	}
 
 	private PhoneNumber parsePhone(String number, String countryCode) {
-		if (!countryService.validateCountryCode(countryCode)) {
+		if (!countryService.validateCountry(countryCode)) {
 			throw new CountryNotFoundException(countryCode);
 		}
 		return transformPhone(number, countryCode);

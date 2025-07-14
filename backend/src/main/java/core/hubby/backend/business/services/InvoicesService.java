@@ -1,6 +1,5 @@
 package core.hubby.backend.business.services;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -11,7 +10,6 @@ import core.hubby.backend.business.dto.param.CreateInvoiceRequest;
 import core.hubby.backend.business.entities.Invoice;
 import core.hubby.backend.business.entities.LineItems;
 import core.hubby.backend.business.repositories.InvoiceRepository;
-import core.hubby.backend.business.repositories.LineItemRepository;
 import core.hubby.backend.business.repositories.OrganizationRepository;
 import core.hubby.backend.contacts.entities.Contact;
 import core.hubby.backend.contacts.services.ContactService;
@@ -57,11 +55,10 @@ public class InvoicesService {
 		
 		// Set invoice contact
 		Optional<Contact> getContactObject = contactService.findOrCreate(request.contact());
-		if (getContactObject.isEmpty()) {
-			throw new NoSuchElementException("Contact object cannot be found.");
-		} else {
-			invoice.setContact(getContactObject.get());
-		}
+		getContactObject.ifPresentOrElse(
+				obj -> invoice.setContact(obj),
+				() -> new NoSuchElementException("Contact object cannot be found.")
+		);
 		
 		setLineItems(
 				invoice,
@@ -108,23 +105,23 @@ public class InvoicesService {
 		 * If lineAmountTypeRequest is not specified then use the organization's
 		 * DefaultPurchasesTax (If specified)
 		 */
-		String lineAmountType = null;
+		Optional<String> lineAmountType = Optional.empty();
 		Optional<String> organizationDefaultTaxPurchase = 
 				organizationRepository.findLineAmountType(organizationId);
 		
 		if (!lineAmountTypeRequest.isBlank() && !lineAmountTypeRequest.isEmpty()) {
-			lineAmountType = lineAmountTypeRequest;
+			lineAmountType = Optional.of(lineAmountTypeRequest);
 		} else if (lineAmountTypeRequest.isBlank() || lineAmountTypeRequest.isEmpty()) {
 			if (organizationDefaultTaxPurchase.isPresent()) {
-				lineAmountType = organizationDefaultTaxPurchase.get();
+				lineAmountType = Optional.of(organizationDefaultTaxPurchase.get());
 			} else {
 				// Type EXCLUSIVE is the default if both lineAmountTypeRequest and 
 				// organizationDefaultTaxPurchase is not specified
-				lineAmountType = InvoiceRepository.INVOICE_LINE_AMOUNT_TYPE_EXCLUSIVE;
+				lineAmountType = Optional.of(InvoiceRepository.INVOICE_LINE_AMOUNT_TYPE_EXCLUSIVE);
 			}
 		}
 		
-		invoice.setLineAmountTypes(lineAmountType);
+		invoice.setLineAmountTypes(lineAmountType.get());
 		
 		Set<LineItems> lineItems = lineItemsSet
 				.stream()

@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.Set;
+
 import core.hubby.backend.business.entities.embedded.DefaultCurrency;
 import core.hubby.backend.core.service.CountryService;
 
@@ -14,6 +16,14 @@ public class CountryServiceTest {
 	@Autowired
 	private CountryService countryService;
 	
+	@Test
+	public void retrieveCountryCodes() {
+		Set<String> codes = countryService.getCountryCodes();
+		
+		assertThat(codes)
+		.isNotNull()
+		.contains("+594", "+63");
+	}
 	@Test
 	public void itShouldReturnCountryCurrency() {
 		DefaultCurrency currency = countryService
@@ -34,13 +44,13 @@ public class CountryServiceTest {
 	
 	@Test
 	public void itShouldValidateCountryCode() {
-		boolean shouldBeTrue = countryService.validateCountryCode("PH");
+		boolean shouldBeTrue = countryService.validateCountry("PH");
 		assertThat(shouldBeTrue)
 		.isNotNull()
 		.isEqualTo(true)
 		.isNotEqualTo(false);
 		
-		boolean shouldBeFalse = countryService.validateCountryCode("XXX");
+		boolean shouldBeFalse = countryService.validateCountry("XXX");
 		assertThat(shouldBeFalse)
 		.isNotNull()
 		.isNotEqualTo(true)

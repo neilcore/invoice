@@ -1,6 +1,4 @@
 package core.hubby.backend.core.service;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -10,8 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.data.repository.query.SecurityEvaluationContextExtension;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import core.hubby.backend.business.entities.embedded.DefaultCurrency;
@@ -20,12 +17,11 @@ import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@Component
+@Service
 @RequiredArgsConstructor
 @Getter
 public class CountryService {
 
-    private final SecurityEvaluationContextExtension securityEvaluationContextExtension;
 	private static final Logger logger = LoggerFactory.getLogger(CountryService.class);
 	
 	@Value("${spring.app.details.api.website}")
@@ -35,10 +31,11 @@ public class CountryService {
 	private Set<CountriesDTO> countries;
 	private Set<String> twoLetterCountryCodes;
 	private Set<String> commonCountryNames;
+	private Set<String> countryCodes;
 	
 	@PostConstruct
 	private void init() {
-		String queryParams = "name,cca2,currencies";
+		String queryParams = "name,cca2,idd,currencies";
 		countries = restClient.get()
 				.uri(
 						uriBuilder -> uriBuilder
@@ -77,10 +74,27 @@ public class CountryService {
 		commonCountryNames = countries.stream()
 				.map(data -> data.name().common())
 				.collect(Collectors.toSet());
+		
+		/**
+		 * Collects all country codes
+		 */
+		countryCodes = countries.stream()
+				.map(data -> {
+					String root = data.idd().root();
+					String suffices = data.idd().suffixes().size() > 0 ? (String) data.idd().suffixes().toArray()[0] : null;
+					
+					return root + suffices;
+				})
+				.collect(Collectors.toSet());
 	}
 	
-	public boolean validateCountryCode(String countryCode) {
-		if (!twoLetterCountryCodes.contains(countryCode)) {
+	/**
+	 * Validate country codes (two letter country name)
+	 * @param countryCode - accepts {@linkplain java.util.String} object type
+	 * @return - @boolean
+	 */
+	public boolean validateCountry(String tlcountry) {
+		if (!twoLetterCountryCodes.contains(tlcountry)) {
 			return false;
 		}
 		return true;
