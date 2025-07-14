@@ -66,49 +66,22 @@ public class ContactService {
 		newContact.setName(request.name().name());
 		newContact.setFirstName(request.name().firstName());
 		newContact.setLastName(request.name().lastName());
+		
 		newContact.setIsSupplier(request.name().isSupplier());
 		newContact.setIsCustomer(request.name().isCustomer());
 		
 		// contact details
 		newContact.setEmailAddress(request.contactDetails().emailAddress());
 		
-		// Validate phone numbers
-		LinkedHashSet<PhoneDetails> validatePhoneDetails =
-				proxyPhoneService.validatePhones(request.contactDetails().phone(), Optional.empty());
+		if (!request.contactDetails().phone().isEmpty()) {
+			// Validate phone numbers
+			LinkedHashSet<PhoneDetails> validatePhoneDetails =
+					proxyPhoneService.validatePhones(request.contactDetails().phone(), Optional.empty());
+			newContact.setPhoneNo(validatePhoneDetails);
+		}
 		
-		newContact.setPhoneNo(validatePhoneDetails);
 		newContact.setCompanyNumber(request.contactDetails().companyNumber());
 		
-	}
-	
-	private boolean ifContainsElement(String keyword, List<String> keywords) {
-		if (!keywords.contains(keyword.toLowerCase())) {
-			return false;
-		}
-		return true;
-	}
-	private List<Map<String, Object>> filterContactDetails(List<Map<String, Object>> details, String type) {
-		if (type == "ADDRESS") {
-			List<String> addressKeywords = List.of("addresstype", "addressline", "city", "postalcode", "attentionto");
-			for (Map<String, Object> address : details) {
-				for (String keyword: address.keySet()) {
-					if (!ifContainsElement(keyword, addressKeywords)) {
-						address.remove(keyword);
-					}
-				}
-			}
-			return details;
-		}
-		
-		List<String> phoneKeywords = List.of("phonenumber", "phonetype", "phoneareacode", "phonecountrycode");
-		for (Map<String, Object> phone : details) {
-			for (String keyword: phone.keySet()) {
-				if (!ifContainsElement(keyword, phoneKeywords)) {
-					phone.remove(keyword);
-				}
-			}
-		}
-		return details;
 	}
 
 }

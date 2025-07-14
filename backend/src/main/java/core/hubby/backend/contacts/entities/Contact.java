@@ -85,13 +85,11 @@ public class Contact implements Serializable {
 	
 	@Column(name = "is_supplier", nullable = false)
 	@NotNull(message = "Supplier status cannot be null")
-	@Builder.Default
-	private Boolean isSupplier = false;
+	private Boolean isSupplier;
 	
 	@Column(name = "is_customer", nullable = false)
 	@NotNull(message = "Customer status cannot be null")
-	@Builder.Default
-	private Boolean isCustomer = false;
+	private Boolean isCustomer;
 	
 	
 	// Only shown in GET response, not in POST/PUT
@@ -108,4 +106,12 @@ public class Contact implements Serializable {
 	@Column(name = "updated_date_utc")
 	@TimeZoneStorage(TimeZoneStorageType.NORMALIZE_UTC)
 	private Instant updatedDateUTC;
+	
+	public void setIsSupplier(Boolean sup) {
+		this.isSupplier = sup ? Boolean.TRUE : Boolean.FALSE;
+	}
+	
+	public void setIsCustomer(Boolean cus) {
+		this.isCustomer = cus ? Boolean.TRUE : Boolean.FALSE;
+	}
 }
