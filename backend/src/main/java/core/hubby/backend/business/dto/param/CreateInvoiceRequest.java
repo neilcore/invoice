@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
+import core.hubby.backend.business.validation.annotation.ValidateInvoiceContact;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Future;
@@ -18,6 +19,7 @@ public record CreateInvoiceRequest(
 		@NotNull(message = "invoiceType component cannot be null.")
 		String invoiceType,
 		@NotNull(message = "contact component cannot be null")
+		@ValidateInvoiceContact
 		Map<String, Object> contact,
 		@NotNull(message = "lineAmounType component cannot be null")
 		@Pattern(regexp = "^[A-Z](?:[A-Z]|_[A-Z])*$", message = "Invalid value for lineAmountType component.")
@@ -32,31 +34,6 @@ public record CreateInvoiceRequest(
 		String status,
 		String reference
 ) {
-	public CreateInvoiceRequest(
-			String invoiceType,
-			Map<String, Object> contact,
-			String lineAmountType,
-			Set<LineItems> lineItems,
-			LocalDate date,
-			LocalDate dueDate,
-			String status,
-			String reference
-	) {
-		this.invoiceType = invoiceType;
-		
-		if (!contact.containsKey("contactId")) {
-			throw new IllegalArgumentException("Invalid value for contact component.");
-		} else {
-			this.contact = contact;
-		}
-		this.lineItems = lineItems;
-		this.lineAmountType = lineAmountType;
-		this.date = date;
-		this.dueDate = dueDate;
-		this.status = status.isBlank() || status.isEmpty() ? "DRAFT" : status;
-		this.reference = reference;
-	}
-	
 	public record LineItems(
 			@NotNull(message = "description component cannot be null.")
 			String description,

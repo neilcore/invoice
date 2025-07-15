@@ -16,16 +16,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * TODO create organization_tax_details migration script
- * Organization's tax details
- */
 @Entity
 @Table(name = "organization_tax_details", schema = "app_sc")
 @Data
@@ -62,14 +59,15 @@ public class TaxDetails implements Serializable {
 	@Column(name = "tax_number", columnDefinition = "jsonb")
 	private Map<String, String> taxNumber;
 	
-	@Column(name = "tax_basis")
-	private String taxBasis;
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@JoinColumn(name = "sales_tax_basis", referencedColumnName = "id")
+	private SalesTaxBasis salesTaxBasis;
 	
 	@Column(name = "tax_period")
 	private String taxPeriod;
 	
 	@Column(name = "sales_tax")
-	private String salesTax;
+	private String defaultSalesTax;
 	
 	public void setTaxNumber(Map<String, String> taxNumber) {
 		this.taxNumber = this.paysTax ? taxNumber : null;
