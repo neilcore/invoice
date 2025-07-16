@@ -8,8 +8,10 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import core.hubby.backend.business.entities.Organization;
+import core.hubby.backend.tax.entities.embedded.TaxNumber;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -36,7 +38,7 @@ public class TaxDetails implements Serializable {
 	private UUID id;
 	
 	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, targetEntity = Organization.class)
-	@JoinColumn(name = "organization", nullable = false, unique = true)
+	@JoinColumn(name = "organization", nullable = false, unique = true, referencedColumnName = "id")
 	private Organization organization;
 	
 	// applies to PURCHASES (bills, spend money, etc. – where your organization is buying something).
@@ -48,16 +50,17 @@ public class TaxDetails implements Serializable {
 	private String defaultTaxPurchases;
 	
 	@Column(name = "pays_tax")
-	private boolean paysTax;
+	private Boolean paysTax;
 	
 	/**
 	 * TODO - needs to gather more info in Xero organization's TaxNumber
 	 * Shown if set. Displays in  UI as Tax File Number (AU), TIN (PH),
 	 * GST Number (NZ), VAT Number (UK) and Tax ID Number (US & Global).
 	 */
+	@Embedded
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(name = "tax_number", columnDefinition = "jsonb")
-	private Map<String, String> taxNumber;
+	private TaxNumber taxNumber;
 	
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "sales_tax_basis", referencedColumnName = "id")
@@ -68,8 +71,4 @@ public class TaxDetails implements Serializable {
 	
 	@Column(name = "sales_tax")
 	private String defaultSalesTax;
-	
-	public void setTaxNumber(Map<String, String> taxNumber) {
-		this.taxNumber = this.paysTax ? taxNumber : null;
-	}
 }

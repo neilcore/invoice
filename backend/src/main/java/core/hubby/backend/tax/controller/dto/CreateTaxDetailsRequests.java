@@ -1,7 +1,8 @@
-package core.hubby.backend.tax.controller.param;
+package core.hubby.backend.tax.controller.dto;
 
 import java.util.UUID;
 
+import core.hubby.backend.tax.entities.embedded.TaxNumber;
 import core.hubby.backend.tax.validation.annotation.ValidateTaxDetailsCondition;
 import jakarta.validation.constraints.NotNull;
 
@@ -14,12 +15,7 @@ public record CreateTaxDetailsRequests(
 		TaxNumber taxNumber ,
 		UUID salesTaxBasis,
 		String taxPeriod,
-		String defaultSalesTax
+		String defaultSalesTax,
+		String defaultTaxPurchases
 ) {
-	public record TaxNumber(
-			@NotNull(message = "label component is required")
-			String label,
-			@NotNull(message = "number component is required")
-			String number
-	) {}
 }

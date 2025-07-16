@@ -1,8 +1,11 @@
 package core.hubby.backend.tax.repositories;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import core.hubby.backend.tax.entities.TaxDetails;
@@ -23,5 +26,8 @@ public interface TaxDetailsRepository extends JpaRepository<TaxDetails, UUID> {
 	static final String SALES_TAX_PERIOD_TWO_MONTHLY = "TWO_MONTHLY";
 	static final String SALES_TAX_PERIOD_FOUR_MONTHLY = "FOUR_MONTHLY";
 	static final String SALES_TAX_PERIOD_SIX_MONTHLY = "SIX_MONTHLY";
+	
+	@Query("SELECT tx FROM TaxDetails tx WHERE tx.organization = :organizationID")
+	Optional<TaxDetails> findTaxDetailsByOrganizationID(@Param("organizationID") UUID organizationID);
 	
 }

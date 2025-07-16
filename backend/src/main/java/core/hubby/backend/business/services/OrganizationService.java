@@ -12,6 +12,7 @@ import core.hubby.backend.core.embedded.PhoneDetails;
 import core.hubby.backend.core.exception.CountryNotFoundException;
 import core.hubby.backend.core.service.CountryService;
 import core.hubby.backend.core.service.phone.PhoneService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
 import java.util.LinkedHashSet;
@@ -175,7 +176,7 @@ public class OrganizationService {
 	 */
 	public OrganizationDetailsResponse retrieveOrganizationById(UUID id) {
 		Organization getOrganization = organizationRepository.findById(id)
-				.orElseThrow(() -> new IllegalArgumentException("Organization entity not found."));
+				.orElseThrow(() -> new EntityNotFoundException("Organization object not found."));
 
 		return mapOrganizationDetails(getOrganization);
 	}

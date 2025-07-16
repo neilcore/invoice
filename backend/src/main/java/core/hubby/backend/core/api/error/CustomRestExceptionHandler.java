@@ -15,15 +15,16 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import core.hubby.backend.business.exception.OrganizationNotFoundException;
 import core.hubby.backend.core.exception.CountryNotFoundException;
 import core.hubby.backend.core.exception.PhoneTypeNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 
@@ -148,15 +149,44 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
      * @param ex - accepts {@linkplain CountryNotFoundException} object type.
      * @return
      */
-    @ExceptionHandler({ CountryNotFoundException.class })
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    String countryNotFoundHandler(CountryNotFoundException ex) {
-        return ex.getMessage();
-    }
+//    @ExceptionHandler({ CountryNotFoundException.class })
+//    public ResponseEntity<Object> countryNotFoundHandler(CountryNotFoundException ex) {
+//        ApiError apiError = new ApiError(
+//                HttpStatus.NOT_FOUND, ex.getLocalizedMessage(), ex.getMessage());
+//        
+//        return new ResponseEntity<Object>(
+//                apiError, new HttpHeaders(), apiError.getStatus());
+//    }
+//    
+//    @ExceptionHandler({ PhoneTypeNotFoundException.class })
+//    public ResponseEntity<Object> phoneTypeNotFoundHandler(PhoneTypeNotFoundException ex) {
+//        ApiError apiError = new ApiError(
+//                HttpStatus.NOT_FOUND, ex.getLocalizedMessage(), ex.getMessage());
+//        
+//        return new ResponseEntity<Object>(
+//                apiError, new HttpHeaders(), apiError.getStatus());
+//    }
+//    
+//    // Organization not found
+//    // @ResponseStatus(HttpStatus.NOT_FOUND)
+//    @ExceptionHandler({ OrganizationNotFoundException.class })
+//    public ResponseEntity<Object> organizationNotFoundHandler(OrganizationNotFoundException ex) {
+//        ApiError apiError = new ApiError(
+//                HttpStatus.NOT_FOUND, ex.getLocalizedMessage(), ex.getMessage());
+//        
+//        return new ResponseEntity<Object>(
+//                apiError, new HttpHeaders(), apiError.getStatus());
+////        return ex.getMessage();
+//    }
     
-    @ExceptionHandler({ PhoneTypeNotFoundException.class })
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    String phoneTypeNotFoundHandler(PhoneTypeNotFoundException ex) {
-        return ex.getMessage();
+    // Global use for all not found entity objects
+    @ExceptionHandler({ EntityNotFoundException.class })
+    public ResponseEntity<Object> entityNotFoundException(EntityNotFoundException ex) {
+        ApiError apiError = new ApiError(
+                HttpStatus.NOT_FOUND, ex.getLocalizedMessage(), ex.getMessage());
+        
+        return new ResponseEntity<Object>(
+                apiError, new HttpHeaders(), apiError.getStatus());
+//        return ex.getMessage();
     }
 }

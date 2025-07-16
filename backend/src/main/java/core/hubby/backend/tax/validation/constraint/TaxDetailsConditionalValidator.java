@@ -1,6 +1,6 @@
 package core.hubby.backend.tax.validation.constraint;
 
-import core.hubby.backend.tax.controller.param.CreateTaxDetailsRequests;
+import core.hubby.backend.tax.controller.dto.CreateTaxDetailsRequests;
 import core.hubby.backend.tax.validation.annotation.ValidateTaxDetailsCondition;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
