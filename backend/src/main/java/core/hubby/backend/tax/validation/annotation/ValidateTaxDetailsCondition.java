@@ -15,7 +15,7 @@ import jakarta.validation.Payload;
 @Constraint(validatedBy = TaxDetailsConditionalValidator.class)
 @Documented
 public @interface ValidateTaxDetailsCondition {
-    String message() default "Tax details (taxNumber, salesTaxBasis, taxPeriod, defaultSalesTax) must be null if paysTax is false, or at least one must be present if paysTax is true.";
+    String message() default "Tax details. paysTax component cannot be set to false if other components are present.";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }
