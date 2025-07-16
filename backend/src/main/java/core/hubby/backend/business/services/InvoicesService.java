@@ -6,7 +6,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
-import core.hubby.backend.business.dto.param.CreateInvoiceRequest;
+import core.hubby.backend.business.controller.dto.CreateInvoiceRequest;
 import core.hubby.backend.business.entities.Invoice;
 import core.hubby.backend.business.entities.LineItems;
 import core.hubby.backend.business.repositories.InvoiceRepository;

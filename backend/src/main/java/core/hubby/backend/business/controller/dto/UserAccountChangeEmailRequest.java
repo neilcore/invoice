@@ -1,4 +1,4 @@
-package core.hubby.backend.business.dto.param;
+package core.hubby.backend.business.controller.dto;
 
 import jakarta.validation.constraints.NotNull;
 

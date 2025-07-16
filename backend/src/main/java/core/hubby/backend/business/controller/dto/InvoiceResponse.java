@@ -1,11 +1,11 @@
-package core.hubby.backend.business.dto.vo;
+package core.hubby.backend.business.controller.dto;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-public record InvoiceVO (List<Map<String, String>> invoices) {
+public record InvoiceResponse (List<Map<String, String>> invoices) {
 	// Nested record class addresses
 	record Contact (
 			UUID contactId, String contactStatus,

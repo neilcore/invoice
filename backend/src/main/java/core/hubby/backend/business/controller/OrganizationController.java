@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import core.hubby.backend.business.dto.param.OrganizationCreateRequest;
-import core.hubby.backend.business.dto.param.OrganizationUserInvitationUpdateRequest;
-import core.hubby.backend.business.dto.vo.OrganizationElementVO;
-import core.hubby.backend.business.dto.vo.OrganizationDetailsResponse;
+import core.hubby.backend.business.controller.dto.CreateOrganizationRequest;
+import core.hubby.backend.business.controller.dto.OrganizationDetailsResponse;
+import core.hubby.backend.business.controller.dto.OrganizationElementResponse;
+import core.hubby.backend.business.controller.dto.OrganizationUserInvitationUpdateRequest;
 import core.hubby.backend.business.services.OrganizationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,7 @@ public class OrganizationController {
 	private final OrganizationService organizationService;
 	
 	@PostMapping("create")
-	public ResponseEntity<OrganizationDetailsResponse> createOrganization(@RequestBody @Valid OrganizationCreateRequest data) {
+	public ResponseEntity<OrganizationDetailsResponse> createOrganization(@RequestBody @Valid CreateOrganizationRequest data) {
 		return ResponseEntity.ok(organizationService.createNewOrganizationObject(data));
 	}
 	
@@ -47,7 +47,7 @@ public class OrganizationController {
 	public ResponseEntity<OrganizationDetailsResponse> updateOrganization(
 			@RequestHeader("x-organization-id") UUID xOrganizationHeaderId,
 			@PathVariable(name = "id") UUID id,
-			@Valid @RequestBody OrganizationCreateRequest data
+			@Valid @RequestBody CreateOrganizationRequest data
 	) {
 		return null;
 	}
@@ -59,7 +59,7 @@ public class OrganizationController {
 	
 	// Get Organization Elements
 	@GetMapping("elements")
-	public ResponseEntity<OrganizationElementVO> getOrganizationElements() {
+	public ResponseEntity<OrganizationElementResponse> getOrganizationElements() {
 		return null;
 	}
 	

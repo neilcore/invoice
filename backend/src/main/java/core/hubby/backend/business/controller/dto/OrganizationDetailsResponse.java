@@ -1,4 +1,4 @@
-package core.hubby.backend.business.dto.vo;
+package core.hubby.backend.business.controller.dto;
 
 import java.time.LocalDate;
 import java.util.LinkedHashSet;

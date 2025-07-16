@@ -1,4 +1,4 @@
-package core.hubby.backend.business.dto.param;
+package core.hubby.backend.business.controller.dto;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -13,7 +13,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public record OrganizationCreateRequest(
+public record CreateOrganizationRequest(
 		Set<InviteUser> inviteOtherUser,
 		BasicInformation basicInformation,
 		@NotNull(message = "contactDetails component cannot be null")

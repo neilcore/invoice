@@ -1,4 +1,4 @@
-package core.hubby.backend.business.dto.vo;
+package core.hubby.backend.business.controller.dto;
 
 import java.util.List;
 import java.util.Map;
@@ -7,7 +7,7 @@ import java.util.Set;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
-public record OrganizationElementVO(
+public record OrganizationElementResponse(
 		@NotEmpty(message = "Organization user role component cannot be empty.")
 		Set<UserOrganizationRole> userRole,
 		@NotEmpty(message = "Organization types component cannot be empty.")

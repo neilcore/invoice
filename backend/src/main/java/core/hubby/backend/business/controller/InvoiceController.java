@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import core.hubby.backend.business.dto.param.CreateInvoiceRequest;
+import core.hubby.backend.business.controller.dto.CreateInvoiceRequest;
 import core.hubby.backend.business.services.InvoicesService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

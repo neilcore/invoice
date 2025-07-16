@@ -1,11 +1,12 @@
 package core.hubby.backend.business.services;
 import org.springframework.stereotype.Service;
 
-import core.hubby.backend.business.dto.param.OrganizationCreateRequest;
-import core.hubby.backend.business.dto.vo.OrganizationDetailsResponse;
+import core.hubby.backend.business.controller.dto.CreateOrganizationRequest;
+import core.hubby.backend.business.controller.dto.OrganizationDetailsResponse;
 import core.hubby.backend.business.entities.Organization;
 import core.hubby.backend.business.entities.OrganizationType;
 import core.hubby.backend.business.entities.embedded.DefaultCurrency;
+import core.hubby.backend.business.mapper.OrganizationMapper;
 import core.hubby.backend.business.repositories.OrganizationRepository;
 import core.hubby.backend.business.repositories.OrganizationTypeRepository;
 import core.hubby.backend.core.embedded.PhoneDetails;
@@ -30,19 +31,22 @@ public class OrganizationService {
 	private final UserAccountService userAccountService;
 	private final CountryService countryService;
 	private final PhoneService phoneService;
+	private final OrganizationMapper organizationMapper;
 	
 	public OrganizationService(
 			OrganizationRepository organizationRepository,
 			OrganizationTypeRepository organizationTypeRepository,
 			UserAccountService userAccountService,
 			CountryService countryService,
-			PhoneService phoneService
+			PhoneService phoneService,
+			OrganizationMapper organizationMapper
 	) {
 		this.organizationRepository = organizationRepository;
 		this.organizationTypeRepository = organizationTypeRepository;
 		this.userAccountService = userAccountService;
 		this.countryService = countryService;
 		this.phoneService = phoneService;
+		this.organizationMapper = organizationMapper;
 	}
 	
 	/**
@@ -77,16 +81,16 @@ public class OrganizationService {
 	 */
 	private OrganizationDetailsResponse save(Organization organization) {
 		Organization newOrganization = organizationRepository.save(organization);
-		return mapOrganizationDetails(newOrganization);
+		return organizationMapper.toOrganizationResponse(newOrganization);
 	}
 	
 	/**
 	 * This method will create new organization object
-	 * @param - {@linkplain OrganizationCreateRequest} object type of data
+	 * @param - {@linkplain CreateOrganizationRequest} object type of data
 	 * @return - {@linkplain OrganizationDetailsResponse} object type of data
 	 */
 	@Transactional
-	public OrganizationDetailsResponse createNewOrganizationObject(OrganizationCreateRequest data) {
+	public OrganizationDetailsResponse createNewOrganizationObject(CreateOrganizationRequest data) {
 		Organization org = getOrganizationObject(null); // New organization object
 		// For now set this as organization's profile picture
 		org.setProfileImage("sample_image_url");
@@ -113,11 +117,11 @@ public class OrganizationService {
 	 * - legalName,
 	 * - organizationType
 	 * - organizationDescription
-	 * @param info - accepts {@linkplain OrganizationCreateRequest.BasicInformation} object type.
+	 * @param info - accepts {@linkplain CreateOrganizationRequest.BasicInformation} object type.
 	 * @param organization - accepts {@linkplain Organization} object type.
 	 */
 	private void setBasicInformation(
-			OrganizationCreateRequest.BasicInformation info,
+			CreateOrganizationRequest.BasicInformation info,
 			Organization organization
 	) {
 		OrganizationType type = getOrganizationType(info.organizationType());
@@ -138,11 +142,11 @@ public class OrganizationService {
 	 * - email
 	 * - web-site
 	 * - externalLinks
-	 * @param contacts - accepts {@linkplain OrganizationCreateRequest.ContactDetails} object type
+	 * @param contacts - accepts {@linkplain CreateOrganizationRequest.ContactDetails} object type
 	 * @param organization - accepts {@linkplain Organization} object type.
 	 */
 	private void setContactDetails(
-			OrganizationCreateRequest.ContactDetails contacts,
+			CreateOrganizationRequest.ContactDetails contacts,
 			Organization organization
 	) {
 		/**
@@ -177,8 +181,7 @@ public class OrganizationService {
 	public OrganizationDetailsResponse retrieveOrganizationById(UUID id) {
 		Organization getOrganization = organizationRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Organization object not found."));
-
-		return mapOrganizationDetails(getOrganization);
+		return organizationMapper.toOrganizationResponse(getOrganization);
 	}
 	
 	/**
@@ -188,66 +191,8 @@ public class OrganizationService {
 	 */
 	private OrganizationType getOrganizationType(UUID type) {
 		OrganizationType getOrganizationType = organizationTypeRepository.findById(type)
-				.orElseThrow(() -> new IllegalArgumentException("Organization type not found"));
+				.orElseThrow(() -> new EntityNotFoundException("Organization type not found"));
 		
 		return getOrganizationType;
-	}
-	
-	/**
-	 * This method will map {@linkplain Organization} object
-	 * to {@linkplain OrganizationDetailsResponse} object type.
-	 * @param org - accepts {@linkplain Organization} object type.
-	 * @return - returns {@linkplain OrganizationDetailsResponse} object type.
-	 */
-	public OrganizationDetailsResponse mapOrganizationDetails(Organization org) {
-		/**
-		 * Will hold organization's basic information
-		 */
-		OrganizationDetailsResponse.BasicInformation basicInformation =
-				new OrganizationDetailsResponse.BasicInformation(
-						org.getProfileImage(),
-						org.getDisplayName(),
-						org.getLegalName(),
-						org.getOrganizationDescription(),
-						Map.of(
-								"id", org.getOrganizationType().getId().toString(),
-								"type", org.getOrganizationType().getName()
-						)
-				);
-		
-		OrganizationDetailsResponse.ContactInformation contactInformation =
-				new OrganizationDetailsResponse.ContactInformation(
-						org.getCountry(),
-						org.getAddress(),
-						org.getEmail(),
-						org.getWebsite(),
-						org.getPhoneNo(),
-						org.getExternalLinks()
-				);
-		/**
-		 * Will retrieve organization users
-		 */
-		Set<OrganizationDetailsResponse.Users> users =
-				org.getOrganizationUsers()
-				.stream()
-				.map(user -> new OrganizationDetailsResponse.Users(
-						Map.of(
-								"id", user.getUserId().getUserId().toString(),
-								"firstName", user.getUserId().getFirstName(),
-								"lastName", user.getUserId().getLastName(),
-								"email", user.getUserId().getEmail()
-						),
-						user.getUserRole(),
-						user.getUserJoined()
-				))
-				.collect(Collectors.toSet());
-		
-		return new OrganizationDetailsResponse(
-				org.getId(),
-				basicInformation,
-				contactInformation,
-				users
-		);
-		
 	}
 }

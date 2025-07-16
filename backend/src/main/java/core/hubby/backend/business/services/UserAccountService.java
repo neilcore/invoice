@@ -9,7 +9,7 @@ import java.util.UUID;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import core.hubby.backend.business.dto.param.OrganizationCreateRequest;
+import core.hubby.backend.business.controller.dto.CreateOrganizationRequest;
 import core.hubby.backend.business.entities.Organization;
 import core.hubby.backend.business.entities.UserAccount;
 import core.hubby.backend.business.entities.UserAccountSettings;
@@ -90,7 +90,7 @@ public class UserAccountService {
 	}
 	
     public void addInvitedUsers(
-    		Set<OrganizationCreateRequest.InviteUser> invitations,
+    		Set<CreateOrganizationRequest.InviteUser> invitations,
     		Organization organization
     ) {
     	UserAccount authenticatedUser = getAuthenticatedUser();
@@ -99,7 +99,7 @@ public class UserAccountService {
     	Set<OrganizationUsers> organizationUsers = organization.getOrganizationUsers();
     	Set<OrganizationUserInvites> organizationUserInvites = new HashSet<>();
     	
-    	for (OrganizationCreateRequest.InviteUser user: invitations) {
+    	for (CreateOrganizationRequest.InviteUser user: invitations) {
     		invitedUserAccount = retrieveById(user.userId()); // Get the UserAccount object
     		accountSettings = invitedUserAccount.getAccountSettings(); // Get User's account settings
     		
