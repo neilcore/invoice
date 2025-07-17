@@ -9,10 +9,13 @@ import java.util.UUID;
 
 import core.hubby.backend.business.entities.Organization;
 import core.hubby.backend.core.audit.CreatedDate;
+import core.hubby.backend.tax.entities.embedded.TaxComponent;
 import core.hubby.backend.tax.repositories.TaxRateRepository;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -70,6 +73,13 @@ public class TaxRate implements Serializable {
 	@Column(nullable = false)
 	@NotBlank(message = "status attribute cannot be null.")
 	private String status;
+	
+	@ElementCollection
+	@CollectionTable(
+			name = "tax_component",
+			joinColumns = @JoinColumn(name = "owner_id", nullable = false, referencedColumnName = "id")
+	)
+	private TaxComponent taxComponent;
 	
 	@Column(name = "apply_to_asset_account")
 	private Boolean applyToAssetAccount;
