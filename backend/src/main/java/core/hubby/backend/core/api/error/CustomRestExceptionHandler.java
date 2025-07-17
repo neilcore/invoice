@@ -3,6 +3,7 @@ package core.hubby.backend.core.api.error;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -20,21 +21,19 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
-import core.hubby.backend.business.exception.OrganizationNotFoundException;
-import core.hubby.backend.core.exception.CountryNotFoundException;
-import core.hubby.backend.core.exception.PhoneTypeNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 
+/**
+ * Needs to test this especially the custom ones below
+ */
 @RestControllerAdvice
 public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
 
-	/*
-	* Will handle validation errors
-	* */
-	
+	/**
+	 * Will handle validation errors
+	 */
 	@Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         List<String> errors = new ArrayList<String>();
@@ -60,9 +59,13 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
                 apiError, new HttpHeaders(), apiError.getStatus());
     }
 
-    /*
-    * Will report constraints violations
-    * */
+    
+    /**
+     * Will report constraint violations
+     * @param ex - accepts {@linkplain ConstraintViolationException} object type
+     * @param request - accepts {@linkplain WebRequest} object type
+     * @return - {@linkplain ResponseEntity} object type.
+     */
     @ExceptionHandler({ ConstraintViolationException.class })
     public ResponseEntity<Object> handleConstraintViolation(
             ConstraintViolationException ex, WebRequest request) {
@@ -133,9 +136,12 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
                 apiError, new HttpHeaders(), apiError.getStatus());
     }
 
-    /*
-    * Fallback handler
-    * */
+    /**
+     * Fallback handler
+     * @param ex - accepts {@linkplain Exception} object type
+     * @param request - {@linkplain WebRequest} object type
+     * @return - {@linkplain ResponseEntity} object type
+     */
     @ExceptionHandler({ Exception.class })
     public ResponseEntity<Object> handleAll(Exception ex, WebRequest request) {
         ApiError apiError = new ApiError(
@@ -143,43 +149,12 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<Object>(
                 apiError, new HttpHeaders(), apiError.getStatus());
     }
-    
+      
     /**
-     * Custom exceptions
-     * @param ex - accepts {@linkplain CountryNotFoundException} object type.
-     * @return
+     * This is for not found entities
+     * @param ex - accepts {@linkplain EntityNotFoundException} object type.
+     * @return - {@linkplain ResponseEntity} type.
      */
-//    @ExceptionHandler({ CountryNotFoundException.class })
-//    public ResponseEntity<Object> countryNotFoundHandler(CountryNotFoundException ex) {
-//        ApiError apiError = new ApiError(
-//                HttpStatus.NOT_FOUND, ex.getLocalizedMessage(), ex.getMessage());
-//        
-//        return new ResponseEntity<Object>(
-//                apiError, new HttpHeaders(), apiError.getStatus());
-//    }
-//    
-//    @ExceptionHandler({ PhoneTypeNotFoundException.class })
-//    public ResponseEntity<Object> phoneTypeNotFoundHandler(PhoneTypeNotFoundException ex) {
-//        ApiError apiError = new ApiError(
-//                HttpStatus.NOT_FOUND, ex.getLocalizedMessage(), ex.getMessage());
-//        
-//        return new ResponseEntity<Object>(
-//                apiError, new HttpHeaders(), apiError.getStatus());
-//    }
-//    
-//    // Organization not found
-//    // @ResponseStatus(HttpStatus.NOT_FOUND)
-//    @ExceptionHandler({ OrganizationNotFoundException.class })
-//    public ResponseEntity<Object> organizationNotFoundHandler(OrganizationNotFoundException ex) {
-//        ApiError apiError = new ApiError(
-//                HttpStatus.NOT_FOUND, ex.getLocalizedMessage(), ex.getMessage());
-//        
-//        return new ResponseEntity<Object>(
-//                apiError, new HttpHeaders(), apiError.getStatus());
-////        return ex.getMessage();
-//    }
-    
-    // Global use for all not found entity objects
     @ExceptionHandler({ EntityNotFoundException.class })
     public ResponseEntity<Object> entityNotFoundException(EntityNotFoundException ex) {
         ApiError apiError = new ApiError(
@@ -188,5 +163,19 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<Object>(
                 apiError, new HttpHeaders(), apiError.getStatus());
 //        return ex.getMessage();
+    }
+    
+    /**
+     * This is for programs that will throw NoSuchElementException.
+     * @param ex - accepts {@linkplain NoSuchElementException} object type.
+     * @return - {@linkplain ResponseEntity} type.
+     */
+    @ExceptionHandler({ NoSuchElementException.class })
+    public ResponseEntity<Object> elementNotFoundException(NoSuchElementException ex) {
+        ApiError apiError = new ApiError(
+                HttpStatus.NOT_FOUND, ex.getLocalizedMessage(), ex.getMessage());
+        
+        return new ResponseEntity<Object>(
+                apiError, new HttpHeaders(), apiError.getStatus());
     }
 }
