@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import core.hubby.backend.business.controller.dto.CreateInvoiceRequest;
-import core.hubby.backend.business.services.InvoicesService;
+import core.hubby.backend.business.services.InvoiceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("api/v1/business/organization/")
 @RequiredArgsConstructor
 public class InvoiceController {
-	private final InvoicesService invoicesService;
+	private final InvoiceService invoicesService;
 	/**
 	 * This will handle invoice create requests.
 	 * @param organizationId - accepts {@linkplain java.util.UUID} object type

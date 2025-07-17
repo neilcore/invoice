@@ -13,12 +13,20 @@ import core.hubby.backend.business.repositories.InvoiceRepository;
 import core.hubby.backend.business.repositories.OrganizationRepository;
 import core.hubby.backend.contacts.entities.Contact;
 import core.hubby.backend.contacts.services.ContactService;
+import core.hubby.backend.tax.entities.TaxType;
 import core.hubby.backend.tax.repositories.TaxTypeRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * When you select an AccountCode for a line item,
+ * that account often has a default TaxType associated with it in Xero.
+ * However, you can override this default by explicitly setting TaxType
+ * in your API request.
+ */
 @Service
 @RequiredArgsConstructor
-public class InvoicesService {
+public class InvoiceService {
 	private final OrganizationRepository organizationRepository;
 	private final InvoiceRepository invoiceRepository;
 	private final ContactService contactService;
@@ -146,13 +154,23 @@ public class InvoicesService {
 					createLineItem.setUnitAmount(lineItem.unitAmount());
 					createLineItem.setLineAmount(calculateLineAmount);
 					createLineItem.setAccountCode(lineItem.accountCode());
-					createLineItem.setTaxType(taxTypeRepository.findById(lineItem.taxType()).orElseThrow(() -> new NoSuchElementException("Tax type object cannot be found.")));
+					
+					// Set tax type
+					TaxType taxType = taxTypeRepository.findById(lineItem.taxType())
+							.orElseThrow(() -> new EntityNotFoundException("TaxType object not found."));
+					createLineItem.setTaxType(taxType);
+					
+					
 					return createLineItem;
 				})
 				.collect(Collectors.toSet());
+		
 		invoice.setLineItems(lineItems);
 		
 		return invoice;
+	}
+	private void calculateTaxAmount() {
+		
 	}
 	
 	/**
