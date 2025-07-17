@@ -2,6 +2,7 @@ package core.hubby.backend.business.controller;
 
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +19,7 @@ import core.hubby.backend.business.controller.dto.OrganizationDetailsResponse;
 import core.hubby.backend.business.controller.dto.OrganizationElementResponse;
 import core.hubby.backend.business.controller.dto.OrganizationUserInvitationUpdateRequest;
 import core.hubby.backend.business.services.OrganizationService;
+import core.hubby.backend.core.api.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -32,8 +34,13 @@ public class OrganizationController {
 	private final OrganizationService organizationService;
 	
 	@PostMapping("create")
-	public ResponseEntity<OrganizationDetailsResponse> createOrganization(@RequestBody @Valid CreateOrganizationRequest data) {
-		return ResponseEntity.ok(organizationService.createNewOrganizationObject(data));
+	public ResponseEntity<ApiResponse> createOrganization(@RequestBody @Valid CreateOrganizationRequest data) {
+		ApiResponse response = new ApiResponse();
+		response.setData(organizationService.createNewOrganizationObject(data));
+		response.setMessage("Organization object found successfully.");
+		response.setStatus(HttpStatus.OK);
+		
+		return ResponseEntity.ok(response);
 	}
 	
 	/**
@@ -53,8 +60,13 @@ public class OrganizationController {
 	}
 	
 	@GetMapping("{id}")
-	public ResponseEntity<OrganizationDetailsResponse> getOrganization(@PathVariable(required = true) UUID id) {
-		return ResponseEntity.ok(organizationService.retrieveOrganizationById(id));
+	public ResponseEntity<ApiResponse> getOrganization(@PathVariable(required = true) UUID id) {
+		ApiResponse response = new ApiResponse();
+		response.setData(organizationService.retrieveOrganizationById(id));
+		response.setMessage("Organization object found successfully.");
+		response.setStatus(HttpStatus.OK);
+		
+		return ResponseEntity.ok(response);
 	}
 	
 	// Get Organization Elements

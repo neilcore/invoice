@@ -1,7 +1,8 @@
 package core.hubby.backend.tax.entities;
 
 import java.io.Serializable;
-import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.UUID;
 
 import org.hibernate.annotations.JdbcTypeCode;
@@ -9,6 +10,7 @@ import org.hibernate.type.SqlTypes;
 
 import core.hubby.backend.business.entities.Organization;
 import core.hubby.backend.tax.entities.embedded.TaxNumber;
+import core.hubby.backend.tax.repositories.TaxDetailsRepository;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -71,4 +73,42 @@ public class TaxDetails implements Serializable {
 	
 	@Column(name = "sales_tax")
 	private String defaultSalesTax;
+	
+	public void setDefaultTaxPurchases(String defaultTaxPurchase) {
+		Set<String> taxPurchases = Set.of(
+				TaxDetailsRepository.TAX_TYPE_APPLIED_EXCLUSIVE,
+				TaxDetailsRepository.TAX_TYPE_APPLIED_INCLUSIVE,
+				TaxDetailsRepository.TAX_TYPE_APPLIED_NO_TAX
+		);
+		if (!defaultTaxPurchase.isBlank()) {
+			if (!taxPurchases.contains(defaultTaxPurchase.toUpperCase())) {
+				throw new NoSuchElementException("Provided default tax purchase not found.");
+			}
+			this.defaultSalesTax = defaultTaxPurchase;
+		}else {
+			this.defaultSalesTax = defaultTaxPurchase;
+		}
+	}
+	
+	public void setTaxPeriod(String taxPeriod) {
+		Set<String> taxPeriods = Set.of(
+				TaxDetailsRepository.SALES_TAX_PERIOD_ANNUALLY,
+				TaxDetailsRepository.SALES_TAX_PERIOD_BI_MONTHLY,
+				TaxDetailsRepository.SALES_TAX_PERIOD_FOUR_MONTHLY,
+				TaxDetailsRepository.SALES_TAX_PERIOD_MONTHLY,
+				TaxDetailsRepository.SALES_TAX_PERIOD_ONE_MONTHLY,
+				TaxDetailsRepository.SALES_TAX_PERIOD_QUARTERLY,
+				TaxDetailsRepository.SALES_TAX_PERIOD_SIX_MONTHLY,
+				TaxDetailsRepository.SALES_TAX_PERIOD_TWO_MONTHLY
+		);
+		
+		if (!taxPeriod.isBlank()) {
+			if (!taxPeriods.contains(taxPeriod.toUpperCase())) {
+				throw new NoSuchElementException("Provided tax period not found.");
+			}
+			this.taxPeriod = taxPeriod;
+		} else {
+			this.taxPeriod = taxPeriod;
+		}
+	}
 }

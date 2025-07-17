@@ -4,7 +4,7 @@ import java.util.UUID;
 import core.hubby.backend.tax.entities.SalesTaxBasis;
 import core.hubby.backend.tax.entities.embedded.TaxNumber;
 
-public record TaxDetailsResponse(
+public record TaxResponse(
 		UUID taxDetailsID,
 		Organization organization,
 		boolean paysTax,

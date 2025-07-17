@@ -1,31 +1,31 @@
-package core.hubby.backend.core.api.error;
+package core.hubby.backend.core.api;
 
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
 
+import jakarta.validation.constraints.NotEmpty;
+
 import java.util.Arrays;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@NoArgsConstructor
 @Getter
 @Setter
-public class ApiError {
-    private HttpStatus status;
-    private String message;
+public final class ApiError extends JsonResponse {
+	
+	@NotEmpty(message = "errors attribute cannot be empty.")
     private List<String> errors;
 
     public ApiError(HttpStatus status, String message, List<String> errors) {
-        super();
-        this.status = status;
-        this.message = message;
+        super(message, status);
         this.errors = errors;
     }
 
     public ApiError(HttpStatus status, String message, String error) {
-        super();
-        this.status = status;
-        this.message = message;
-        errors = Arrays.asList(error);
+    	super(message, status);
+        this.errors = Arrays.asList(error);
     }
 }

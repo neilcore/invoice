@@ -27,7 +27,7 @@ import core.hubby.backend.business.entities.UserAccount;
 import core.hubby.backend.business.enums.Roles;
 import core.hubby.backend.business.repositories.UserAccountRepository;
 import core.hubby.backend.business.services.UserAccountService;
-import core.hubby.backend.core.api.error.ApiError;
+import core.hubby.backend.core.api.ApiError;
 import lombok.RequiredArgsConstructor;
 
 @RequestMapping("api/auth/")

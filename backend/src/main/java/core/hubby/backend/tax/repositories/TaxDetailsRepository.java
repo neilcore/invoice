@@ -12,10 +12,10 @@ import core.hubby.backend.tax.entities.TaxDetails;
 
 @Repository
 public interface TaxDetailsRepository extends JpaRepository<TaxDetails, UUID> {
-	// Default sales tax
-	static final String DEFAULT_SALES_TAX_EXCLUSIVE = "EXCLUSIVE";
-	static final String DEFAULT_SALES_TAX_INCLUSIVE = "INCLUSIVE";
-	static final String DEFAULT_SALES_TAX_NO_TAX = "NO_TAX";
+	// Tax types
+	static final String TAX_TYPE_APPLIED_EXCLUSIVE = "EXCLUSIVE";
+	static final String TAX_TYPE_APPLIED_INCLUSIVE = "INCLUSIVE";
+	static final String TAX_TYPE_APPLIED_NO_TAX = "NO_TAX";
 	
 	// Sales tax period
 	static final String SALES_TAX_PERIOD_MONTHLY = "MONTHLY";
