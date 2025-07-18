@@ -84,7 +84,7 @@ public class Organization implements Serializable {
 	private Set<OrganizationUserInvites> organizationUserInvites;
 	
 	@Column(name = "display_name", nullable = false, unique = true)
-	@NotBlank(message = "displayName cannot be blank.")
+	@NotBlank(message = "displayName attribute cannot be blank.")
 	private String displayName;
 	
 	// The official legal name or trading name of the business
@@ -97,17 +97,17 @@ public class Organization implements Serializable {
 	
 	// e.g., "US", "AU", "NZ", "GB"
 	@Column(nullable = false)
-	@NotNull(message = "country cannot be null.")
+	@NotNull(message = "country attribute cannot be null.")
 	private String country;
 	
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(name = "default_currency", nullable = false, columnDefinition = "jsonb")
-	@NotNull(message = "defaultCurrency cannot be null.")
+	@NotNull(message = "defaultCurrency attribute cannot be null.")
 	private DefaultCurrency defaultCurrency;
 	
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "organization_type", nullable = false)
-	@NotNull(message = "The type where the organization belong to is required")
+	@NotNull(message = "organizationType attribute cannot be null.")
 	private OrganizationType organizationType;
 	
 	/* Contact Details */
@@ -117,7 +117,7 @@ public class Organization implements Serializable {
 	
 	@Column(name = "email", nullable = false)
 	@NotBlank(message = "Email is mandatory")
-	@Email(message = "Email should be valid")
+	@Email(message = "Email attribute should be valid")
 	private String email;
 	
 	@ToString.Exclude
@@ -126,7 +126,7 @@ public class Organization implements Serializable {
 	@OneToOne(fetch = FetchType.LAZY, mappedBy = "organization")
 	private TaxDetails taxDetails;
 	
-	@NotBlank(message = "timeZone is required.")
+	@NotBlank(message = "timeZone attribute is required.")
 	@Column(name = "time_zone")
 	private String timeZone;
 	
@@ -136,7 +136,7 @@ public class Organization implements Serializable {
 	
 	@JdbcTypeCode(SqlTypes.JSON_ARRAY)
 	@Column(name = "address", nullable = false, columnDefinition = "jsonb[]")
-	@NotNull(message = "Address cannot be null.")
+	@NotNull(message = "Address attribute cannot be null.")
 	private Set<Map<String, String>> address;
 	
 	@JdbcTypeCode(SqlTypes.JSON_ARRAY)
@@ -145,7 +145,7 @@ public class Organization implements Serializable {
 	
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(name = "payment_terms")
-	@NotNull(message = "Organization payment terms cannot be null")
+	@NotNull(message = "paymentTerms attribute cannot be null.")
 	private Map<String, String> paymentTerms;
 	
 	@Embedded
