@@ -1,4 +1,5 @@
 package core.hubby.backend.tax.service;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -11,9 +12,11 @@ import core.hubby.backend.tax.controller.dto.TaxDetailResponse;
 import core.hubby.backend.tax.controller.dto.TaxResponse;
 import core.hubby.backend.tax.entities.SalesTaxBasis;
 import core.hubby.backend.tax.entities.TaxDetails;
+import core.hubby.backend.tax.entities.TaxType;
 import core.hubby.backend.tax.mapper.TaxDetailMapper;
 import core.hubby.backend.tax.repositories.SalesTaxBasisRepository;
 import core.hubby.backend.tax.repositories.TaxDetailsRepository;
+import core.hubby.backend.tax.repositories.TaxTypeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TaxService {
 	private final TaxDetailsRepository taxDetailsRepository;
+	private final TaxTypeRepository taxTypeRepository;
 	private final SalesTaxBasisRepository salesTaxBasisRepository;
 	private final OrganizationRepository organizationRepository;
 	private final TaxDetailMapper taxDetailMapper;
@@ -67,12 +71,23 @@ public class TaxService {
 		return taxDetailMapper.taxToTaxDetailsVO(getTaxDetails);
 	}
 	
-	public TaxDetailResponse taxDetailResponse() {
-		Set<String> taxType = Set.of(
-				TaxDetailsRepository.TAX_TYPE_APPLIED_EXCLUSIVE,
-				TaxDetailsRepository.TAX_TYPE_APPLIED_INCLUSIVE,
-				TaxDetailsRepository.TAX_TYPE_APPLIED_NO_TAX
-		);
+	/**
+	 * This method will return all tax details.
+	 * @param organizationUuid - accepts {@linkplain java.util.UUID} object type.
+	 * @return - {@linkplain TaxDetailResponse} object type.
+	 */
+	public TaxDetailResponse taxDetailResponse(UUID organizationUuid) {
+		/**
+		 * Country specific tax type.
+		 * Tax types are retrieve by using organization's country
+		 */
+		Optional<String> organizationCountry = organizationRepository.findCountryUsingOrganizationId(organizationUuid);
+		TaxType taxTypeByCountry = 
+				taxTypeRepository.findByLabelIgnoreCase(organizationCountry.get())
+				.orElseThrow(() -> new EntityNotFoundException(
+						"Tax types from country " + organizationCountry.get() + " not found."
+				));
+		
 		Set<String> salesTaxPeriod = Set.of(
 				TaxDetailsRepository.SALES_TAX_PERIOD_ANNUALLY,
 				TaxDetailsRepository.SALES_TAX_PERIOD_BI_MONTHLY,
@@ -84,6 +99,6 @@ public class TaxService {
 				TaxDetailsRepository.SALES_TAX_PERIOD_TWO_MONTHLY
 		);
 		
-		return new TaxDetailResponse(taxType, salesTaxPeriod);
+		return new TaxDetailResponse(taxTypeByCountry.getTypeCollections(), salesTaxPeriod);
 	}
 }

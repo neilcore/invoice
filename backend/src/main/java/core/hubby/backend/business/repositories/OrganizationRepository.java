@@ -75,5 +75,13 @@ public interface OrganizationRepository extends JpaRepository<Organization, UUID
 	 */
     @Query("SELECT org.organizationType FROM Organization org WHERE org.id = :id")
     Optional<String> findLineAmountType(@Param("id") UUID id);
+    
+    /**
+     * This will retrieve the organization's country using organization ID
+     * @param id - {@linkplain java.util.UUID} id
+     * @return - {@linkplain java.util.Optional} object.
+     */
+    @Query("SELECT org.country FROM Organization org WHERE org.id = :id")
+    Optional<String> findCountryUsingOrganizationId(@Param("id") UUID id);
 	
 }

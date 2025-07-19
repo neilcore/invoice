@@ -16,4 +16,5 @@ public interface TaxTypeRepository extends JpaRepository<TaxType, UUID> {
 	static final String TAX_TYPE_BASEEXCLUDED = "BASEEXCLUDED";
 	static final String TAX_TYPE_GSTONIMPORTS = "GSTONIMPORTS";
 	
+	Optional<TaxType> findByLabelIgnoreCase(String label);
 }
