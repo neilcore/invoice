@@ -79,14 +79,17 @@ public class TaxService {
 	public TaxDetailResponse taxDetailResponse(UUID organizationUuid) {
 		/**
 		 * Country specific tax type.
-		 * Tax types are retrieve by using organization's country
+		 * Tax types are retrieve by using organization's country.
+		 * If country-specific tax types are not found. return the GLOBAL instead.
 		 */
 		Optional<String> organizationCountry = organizationRepository.findCountryUsingOrganizationId(organizationUuid);
 		TaxType taxTypeByCountry = 
 				taxTypeRepository.findByLabelIgnoreCase(organizationCountry.get())
-				.orElseThrow(() -> new EntityNotFoundException(
-						"Tax types from country " + organizationCountry.get() + " not found."
-				));
+				.orElseGet(() -> {
+					Optional<TaxType> global = 
+							taxTypeRepository.findByLabelIgnoreCase("GLOBAL");
+					return global.get();
+				});
 		
 		Set<String> salesTaxPeriod = Set.of(
 				TaxDetailsRepository.SALES_TAX_PERIOD_ANNUALLY,
