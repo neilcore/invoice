@@ -1,9 +1,19 @@
-package core.hubby.backend.tax.entities.embedded;
+package core.hubby.backend.tax.entities;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.UUID;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -11,12 +21,26 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Embeddable
+@Entity
+@Table(name = "tax_component", schema = "app_sc")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-public class TaxComponent {
+public class TaxComponent implements Serializable {
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id @GeneratedValue(strategy = GenerationType.UUID)
+	private UUID id;
+	
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@JoinColumn(name = "taxt_rate_id", referencedColumnName = "id", nullable = false, unique = true)
+	private TaxRate taxRate;
+	
 	// Name of tax component
 	@NotBlank(message = "name attribute cannot be blank.")
 	@Column(name = "name", nullable = false)

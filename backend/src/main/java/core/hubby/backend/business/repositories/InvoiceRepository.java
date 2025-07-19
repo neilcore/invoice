@@ -23,5 +23,9 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
 	
 	// Invoice tax calculation types
 	static final String INVOICE_TAX_CALCULATION_TYPE_TAXCALC_AUTO = "TAXCALC/AUTO";
+	
+	// Invoice type
+	static final String INVOICE_TYPE_CUSTOMER_INVOICE = "CUSTOMER_INVOICE";
+	static final String INVOICE_TYPE_SUPPLIER_INVOICE = "SUPPLIER_INVOICE";
 
 }

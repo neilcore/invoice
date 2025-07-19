@@ -12,7 +12,7 @@ import core.hubby.backend.tax.entities.TaxDetails;
 public interface TaxDetailMapper {
 	@Mappings({
 		@Mapping(target = "taxDetailsID", source = "id"),
-		@Mapping(target = "organization", expression = "java(new TaxDetailsResponse.Organization(taxdetails.getOrganization().getId()))")
+		@Mapping(target = "organization", expression = "java(new TaxResponse.Organization(taxdetails.getOrganization().getId()))")
 	})
 	TaxResponse taxToTaxDetailsVO(TaxDetails taxdetails);
 }

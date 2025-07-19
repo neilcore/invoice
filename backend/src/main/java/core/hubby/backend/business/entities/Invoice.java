@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import core.hubby.backend.business.repositories.InvoiceRepository;
 import core.hubby.backend.contacts.entities.Contact;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -98,7 +99,7 @@ public class Invoice implements java.io.Serializable {
 	
 	
 	public void setType(String type) {
-		if (!Set.of("ACCOUNT_PAYABLE", "ACCOUNT_RECEIVABLE").contains(type.toLowerCase())) {
+		if (!Set.of(InvoiceRepository.INVOICE_TYPE_CUSTOMER_INVOICE, InvoiceRepository.INVOICE_TYPE_SUPPLIER_INVOICE).contains(type.toLowerCase())) {
 			throw new NoSuchElementException("Invalid invoice type value.");
 		} else {
 			this.type = type.toUpperCase();

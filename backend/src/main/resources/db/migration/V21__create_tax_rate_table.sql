@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS tax_rate (
-	id uuid NOT NULL PRIMARY KEY DEFAULT gen_randon_uuid(),
+	id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
 	organization uuid NOT NULL REFERENCES organization(id) ON DELETE CASCADE,
 	name VARCHAR(200) NOT NULL UNIQUE,
 	tax_type uuid NOT NULL REFERENCES tax_type(id) ON DELETE SET NULL,

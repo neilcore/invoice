@@ -1,0 +1,3 @@
+ALTER TABLE tax_type
+DROP COLUMN tax_type,
+ADD COLUMN type JSONB[] NOT NULL;
