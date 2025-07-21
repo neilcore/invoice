@@ -8,18 +8,18 @@ import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
-import core.hubby.backend.business.validation.annotation.ValidateInvoiceContact;
+import core.hubby.backend.business.validation.annotation.ValidateInvoice;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
+@ValidateInvoice
 public record CreateInvoiceRequest(
 		@NotNull(message = "invoiceType component cannot be null.")
 		String invoiceType,
 		@NotNull(message = "contact component cannot be null")
-		@ValidateInvoiceContact
 		Map<String, Object> contact,
 		@NotNull(message = "lineAmounType component cannot be null")
 		@Pattern(regexp = "^[A-Z](?:[A-Z]|_[A-Z])*$", message = "Invalid value for lineAmountType component.")
@@ -32,6 +32,8 @@ public record CreateInvoiceRequest(
 		@DateTimeFormat(iso = ISO.DATE)
 		LocalDate dueDate,
 		String status,
+		@NotNull(message = "taxEligible component cannot be null.")
+		Boolean taxEligible,
 		String reference
 ) {
 	public record LineItems(
