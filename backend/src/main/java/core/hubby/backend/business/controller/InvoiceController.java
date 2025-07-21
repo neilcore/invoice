@@ -23,6 +23,13 @@ import lombok.RequiredArgsConstructor;
 public class InvoiceController {
 	private final InvoiceService invoicesService;
 	
+	/**
+	 * When the user creates an invoice (e.g. clicks the button for creating
+	 * new invoice) a request will be sent to this and this will be the response.
+	 * @param organizationId - accepts {@linkplain java.util.UUID} object type.
+	 * @return - {@linkplain ResponseEntity} object type that holds
+	 * {@linkplain ApiResponse} type.
+	 */
 	@GetMapping(path = "{organizationId}/invoice/tax/eligibility")
 	public ResponseEntity<ApiResponse> checkInvoiceTaxEligibility(
 			@PathVariable("organizationId") UUID organizationId
