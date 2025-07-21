@@ -3,6 +3,7 @@ package core.hubby.backend.business.controller;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,7 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import core.hubby.backend.business.controller.dto.CreateInvoiceRequest;
+import core.hubby.backend.business.controller.dto.InvoiceTaxEligibility;
 import core.hubby.backend.business.services.InvoiceService;
+import core.hubby.backend.core.api.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -19,6 +22,19 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class InvoiceController {
 	private final InvoiceService invoicesService;
+	
+	@GetMapping(path = "{organizationId}/invoice/tax/eligibility")
+	public ResponseEntity<ApiResponse> checkInvoiceTaxEligibility(
+			@PathVariable("organizationId") UUID organizationId
+	) {
+		ApiResponse response = new ApiResponse();
+		
+		InvoiceTaxEligibility invoiceTaxEligibility =
+				invoicesService.taxEligibility(organizationId);
+		
+		response.setData(invoiceTaxEligibility);
+		return ResponseEntity.ok(response);
+	}
 	/**
 	 * This will handle invoice create requests.
 	 * @param organizationId - accepts {@linkplain java.util.UUID} object type

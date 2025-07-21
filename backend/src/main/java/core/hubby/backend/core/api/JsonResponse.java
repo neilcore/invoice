@@ -1,5 +1,4 @@
 package core.hubby.backend.core.api;
-
 import org.springframework.http.HttpStatus;
 
 import jakarta.validation.constraints.NotBlank;
@@ -20,7 +19,7 @@ sealed class JsonResponse permits ApiError, ApiResponse {
 	private HttpStatus status;
 	
 	public JsonResponse(String msg, HttpStatus status) {
-		this.message = msg;
-		this.status = status;
+		this.message = msg.isBlank() ? "Request sent successfully" : msg;
+		this.status = status == null ? HttpStatus.OK : status;
 	}
 }
