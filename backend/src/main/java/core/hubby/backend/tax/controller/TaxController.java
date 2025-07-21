@@ -13,7 +13,7 @@ import core.hubby.backend.tax.service.TaxService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("api/v1/tax/")
+@RequestMapping("api/v1/taxes/")
 @RequiredArgsConstructor
 public class TaxController {
 	private final TaxService taxService;

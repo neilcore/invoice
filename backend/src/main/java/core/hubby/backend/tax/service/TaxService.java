@@ -83,7 +83,7 @@ public class TaxService {
 		 * If country-specific tax types are not found. return the GLOBAL instead.
 		 */
 		Optional<String> organizationCountry = organizationRepository.findCountryUsingOrganizationId(organizationUuid);
-		TaxType taxTypeByCountry = 
+		TaxType taxTypeByCountry =
 				taxTypeRepository.findByLabelIgnoreCase(organizationCountry.get())
 				.orElseGet(() -> {
 					Optional<TaxType> global = 

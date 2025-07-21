@@ -16,5 +16,21 @@ public interface TaxTypeRepository extends JpaRepository<TaxType, UUID> {
 	static final String TAX_TYPE_BASEEXCLUDED = "BASEEXCLUDED";
 	static final String TAX_TYPE_GSTONIMPORTS = "GSTONIMPORTS";
 	
+	static final String COUNTRY_INELIGIBLE_FOR_TAX = """
+			Unable to apply tax to this invoice because the organization's specified
+			country is not yet supported within our system.
+			""";
+	
+	static final String COUNTRY_ELIGIBLE_FOR_TAX = """
+			Tax can be applied to this invoice.
+			""";
+	
 	Optional<TaxType> findByLabelIgnoreCase(String label);
+	
+	/**
+	 * This will check if a record label exists.
+	 * @param label - accepts {@linkplain java.util.String} object type.
+	 * @return - {@linkplain Boolean}
+	 */
+	Boolean existsByLabelIgnoreCase(String label);
 }

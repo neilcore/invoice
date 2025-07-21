@@ -29,18 +29,6 @@ public class TaxRunner implements CommandLineRunner {
 		
 		taxTypeRepository.save(au);
 		
-		TaxType global = new TaxType();
-		
-		global.setLabel("GLOBAL");
-		Set<TaxTypes> GlobalTypes = Set.of(
-				new TaxTypes("OUTPUT", 0.00, "GST on Income", true),
-				new TaxTypes("INPUT", 0.00, "GST on Expenses", true),
-				new TaxTypes("BASEEXCLUDED", 0.00, "BAS Excluded", true)
-		);
-		global.setTypeCollections(GlobalTypes);
-		
-		taxTypeRepository.save(global);
-		
 		TaxType us = new TaxType();
 		
 		us.setLabel("US");

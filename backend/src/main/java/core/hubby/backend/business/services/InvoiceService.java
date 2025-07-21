@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import core.hubby.backend.business.controller.dto.CreateInvoiceRequest;
+import core.hubby.backend.business.controller.dto.InvoiceTaxEligibility;
 import core.hubby.backend.business.entities.Invoice;
 import core.hubby.backend.business.entities.LineItems;
 import core.hubby.backend.business.repositories.InvoiceRepository;
@@ -16,6 +17,7 @@ import core.hubby.backend.contacts.services.ContactService;
 import core.hubby.backend.tax.entities.TaxType;
 import core.hubby.backend.tax.repositories.TaxTypeRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -31,6 +33,30 @@ public class InvoiceService {
 	private final InvoiceRepository invoiceRepository;
 	private final ContactService contactService;
 	private final TaxTypeRepository taxTypeRepository;
+	
+	/**
+	 * When the user creates an invoice (e.g. clicks the button for creating
+	 * new invoice) a request (GET) will be sent and this will be the response.
+	 * This method checks if tax can be applied to the invoice base on the
+	 * organization's country code.
+	 * @param organizationID - accepts {@linkplain java.util.UUID} object type.
+	 * @return - {@linkplain InvoiceTaxEligibility} object type.
+	 */
+	public InvoiceTaxEligibility taxEligibility(@NotNull UUID organizationID) {
+		Optional<String> country = organizationRepository
+				.findCountryUsingOrganizationId(organizationID);
+		Boolean existsByLabel = taxTypeRepository.existsByLabelIgnoreCase(country.get());
+		
+		if (existsByLabel) {
+			return new InvoiceTaxEligibility(organizationID, existsByLabel, TaxTypeRepository.COUNTRY_ELIGIBLE_FOR_TAX);
+		}
+		
+		return new InvoiceTaxEligibility(
+				organizationID,
+				existsByLabel,
+				TaxTypeRepository.COUNTRY_INELIGIBLE_FOR_TAX
+		);
+	}
 	
 	/**
 	 * This method will retrieve an invoice object
