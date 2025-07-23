@@ -20,6 +20,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -52,10 +53,12 @@ public class TaxRate implements Serializable {
 	@NotBlank(message = "name attribute cannot be null.")
 	private String name;
 	
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	@JoinColumn(name = "tax_type", nullable = false, referencedColumnName = "id")
-	@NotNull(message = "taxType attribute cannot be null.")
-	private TaxType taxType;
+	@Column(name = "the_type", nullable = false, unique = true)
+	@NotBlank(message = "taxType attribute cannot be blank.")
+	private String taxType;
+	
+	@OneToMany(mappedBy = "taxRate", fetch = FetchType.EAGER)
+	private TaxComponent taxComponent;
 	
 	// Shown for display purposes.
 	// Presents the tax rate to the end-user in a clear and understandable format.

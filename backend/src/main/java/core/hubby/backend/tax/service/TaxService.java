@@ -13,6 +13,7 @@ import core.hubby.backend.tax.controller.dto.TaxResponse;
 import core.hubby.backend.tax.entities.SalesTaxBasis;
 import core.hubby.backend.tax.entities.TaxDetails;
 import core.hubby.backend.tax.entities.TaxType;
+import core.hubby.backend.tax.entities.embedded.TaxTypes;
 import core.hubby.backend.tax.mapper.TaxDetailMapper;
 import core.hubby.backend.tax.repositories.SalesTaxBasisRepository;
 import core.hubby.backend.tax.repositories.TaxDetailsRepository;
@@ -80,16 +81,18 @@ public class TaxService {
 		/**
 		 * Country specific tax type.
 		 * Tax types are retrieve by using organization's country.
-		 * If country-specific tax types are not found. return the GLOBAL instead.
 		 */
 		Optional<String> organizationCountry = organizationRepository.findCountryUsingOrganizationId(organizationUuid);
-		TaxType taxTypeByCountry =
-				taxTypeRepository.findByLabelIgnoreCase(organizationCountry.get())
-				.orElseGet(() -> {
-					Optional<TaxType> global = 
-							taxTypeRepository.findByLabelIgnoreCase("GLOBAL");
-					return global.get();
-				});
+		Optional<TaxType> taxTypeByCountry =
+				taxTypeRepository.findByLabelIgnoreCase(organizationCountry.get());
+		
+		Set<TaxTypes> typeCollections = taxTypeByCountry.isEmpty() ? null
+				: taxTypeByCountry.get().getTypeCollections();
+		boolean availability = 
+				typeCollections != null ? true : false;
+		
+		TaxDetailResponse.AvailableTaxTypes taxTypes =
+				new TaxDetailResponse.AvailableTaxTypes(availability, typeCollections);
 		
 		Set<String> salesTaxPeriod = Set.of(
 				TaxDetailsRepository.SALES_TAX_PERIOD_ANNUALLY,
@@ -102,6 +105,6 @@ public class TaxService {
 				TaxDetailsRepository.SALES_TAX_PERIOD_TWO_MONTHLY
 		);
 		
-		return new TaxDetailResponse(taxTypeByCountry.getTypeCollections(), salesTaxPeriod);
+		return new TaxDetailResponse(taxTypes, salesTaxPeriod);
 	}
 }

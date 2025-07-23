@@ -170,18 +170,26 @@ public class InvoiceService {
 							lineItem.discountRate() : customerDefaultDiscount != null ?
 									customerDefaultDiscount : null;
 					
-					Double calculateLineAmount = discountRateIfExists != null ?
+					Double calculateLineAmount = null;
+					calculateLineAmount = discountRateIfExists != null ?
 							lineItem.quantity() * lineItem.unitAmount() * ((100 - discountRateIfExists) / 100)
 							: lineItem.quantity() * lineItem.unitAmount();
 					
-					createLineItem.setDiscountRate(discountRateIfExists);
+					if (calculateLineAmount != null) {
+						createLineItem.setDiscountRate(discountRateIfExists);
+					}
+
 					createLineItem.setDescription(lineItem.description());
 					createLineItem.setQuantity(lineItem.quantity());
 					createLineItem.setUnitAmount(lineItem.unitAmount());
 					createLineItem.setLineAmount(calculateLineAmount);
 					createLineItem.setAccountCode(lineItem.accountCode());
 					
-					// Set tax type
+					/**
+					 * Set tax type
+					 * Used as an override if the default Tax Code for the
+					 * selected AccountCode is not correct.
+					 */
 					TaxType taxType = taxTypeRepository.findById(lineItem.taxType())
 							.orElseThrow(() -> new EntityNotFoundException("TaxType object not found."));
 					createLineItem.setTaxType(taxType);

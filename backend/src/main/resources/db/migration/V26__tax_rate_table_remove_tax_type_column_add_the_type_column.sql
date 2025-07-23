@@ -1,0 +1,3 @@
+ALTER TABLE tax_rate
+DROP COLUMN tax_type,
+ADD COLUMN the_type VARCHAR(100) NOT NULL UNIQUE;

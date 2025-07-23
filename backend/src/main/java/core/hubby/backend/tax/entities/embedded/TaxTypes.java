@@ -31,6 +31,9 @@ public class TaxTypes implements Serializable {/**
 	@NotBlank(message = "name attribute cannot be blank.")
 	private String name;
 	
+	// VAT or GST
+	private String component;
+	
 	@NotNull(message = "systemDefined attribute cannot be null.")
 	private Boolean systemDefined;
 

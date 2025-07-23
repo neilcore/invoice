@@ -9,5 +9,7 @@ import core.hubby.backend.tax.entities.TaxComponent;
 
 @Repository
 public interface TaxComponentRepository extends JpaRepository<TaxComponent, UUID> {
-
+	// Tax component name type
+	static final String COMPONENT_VAT = "VAT";
+	static final String COMPONENT_GST = "GST";
 }
