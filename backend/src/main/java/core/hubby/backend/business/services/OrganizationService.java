@@ -8,6 +8,7 @@ import core.hubby.backend.business.entities.OrganizationType;
 import core.hubby.backend.business.entities.embedded.DefaultCurrency;
 import core.hubby.backend.business.mapper.OrganizationMapper;
 import core.hubby.backend.business.repositories.OrganizationRepository;
+import core.hubby.backend.business.repositories.OrganizationSettingsRepository;
 import core.hubby.backend.business.repositories.OrganizationTypeRepository;
 import core.hubby.backend.core.embedded.PhoneDetails;
 import core.hubby.backend.core.exception.CountryNotFoundException;
@@ -24,6 +25,7 @@ import java.util.UUID;
 @Service
 public class OrganizationService {
 	private final OrganizationRepository organizationRepository;
+	private final OrganizationSettingsRepository organizationSettingsRepo;
 	private final OrganizationTypeRepository organizationTypeRepository;
 	private final UserAccountService userAccountService;
 	private final CountryService countryService;
@@ -32,6 +34,7 @@ public class OrganizationService {
 	
 	public OrganizationService(
 			OrganizationRepository organizationRepository,
+			OrganizationSettingsRepository organizationSettingsRepository,
 			OrganizationTypeRepository organizationTypeRepository,
 			UserAccountService userAccountService,
 			CountryService countryService,
@@ -39,6 +42,7 @@ public class OrganizationService {
 			OrganizationMapper organizationMapper
 	) {
 		this.organizationRepository = organizationRepository;
+		this.organizationSettingsRepo = organizationSettingsRepository;
 		this.organizationTypeRepository = organizationTypeRepository;
 		this.userAccountService = userAccountService;
 		this.countryService = countryService;

@@ -1,7 +1,4 @@
 package core.hubby.backend.tax.service;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -12,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import core.hubby.backend.business.entities.Organization;
 import core.hubby.backend.business.repositories.OrganizationRepository;
-import core.hubby.backend.business.services.OrganizationService;
 import core.hubby.backend.tax.TaxMapper;
 import core.hubby.backend.tax.controller.dto.TaxRateRequests;
 import core.hubby.backend.tax.entities.TaxComponent;
@@ -48,10 +44,14 @@ public class TaxRateService {
 		// Get the tax type collections
 		Set<TaxTypes> collections = countryTaxType.getTypeCollections();
 		
-		return taxMapper.toTaxRateRequests(collections);
+		return taxMapper.taxTypeToTaxRateRequests(collections);
 		
 	}
-	public void createTaxRate(@NotNull UUID organizationID, Set<TaxRateRequests> requests) {
+	
+	public Set<TaxRateRequests> createTaxRates(
+			@NotNull UUID organizationID,
+			Set<TaxRateRequests> requests
+	) {
 		Set<TaxRate> taxrates = requests.stream()
 				.map(request -> {
 					TaxRate newTaxRate = new TaxRate();
@@ -68,7 +68,7 @@ public class TaxRateService {
 					request.taxComponents().stream()
 					.forEach(component -> {
 						taxComponent.setName(component.name());
-						taxComponent.setRate(new BigDecimal(component.rate()));
+						taxComponent.setRate(component.rate());
 						taxComponent.setIsCompound(component.isCompound());
 						taxComponent.setNonRecoverable(component.nonRecoverable());
 					});
@@ -84,6 +84,7 @@ public class TaxRateService {
 				})
 				.collect(Collectors.toSet());
 		
-		taxRateRepository.saveAll(taxrates);
+		List<TaxRate> savedTaxRates = taxRateRepository.saveAll(taxrates);
+		return taxMapper.toTaxRateRequests(savedTaxRates);
 	}
 }
