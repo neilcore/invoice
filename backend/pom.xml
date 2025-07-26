@@ -55,7 +55,6 @@
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-data</artifactId>
-			<version>6.4.5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -146,11 +145,6 @@
 			<artifactId>postgresql</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-	      <groupId>com.h2database</groupId>
-	      <artifactId>h2</artifactId>
-	      <scope>test</scope>
-	    </dependency>
 	    <dependency>
 		    <groupId>com.googlecode.libphonenumber</groupId>
 		    <artifactId>libphonenumber</artifactId>
@@ -161,6 +155,11 @@
 		    <groupId>org.apache.commons</groupId>
 		    <artifactId>commons-text</artifactId>
 		    <version>1.13.1</version>
+		</dependency>
+		<dependency>
+		    <groupId>io.rest-assured</groupId>
+		    <artifactId>rest-assured</artifactId>
+		    <scope>test</scope>
 		</dependency>
 	</dependencies>
 
@@ -212,6 +211,18 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			<plugin>
+	            <groupId>org.apache.maven.plugins</groupId>
+	            <artifactId>maven-surefire-plugin</artifactId>
+	             <configuration>
+	                <systemPropertyVariables>
+	                    <DB_URL>${env.DB_URL}</DB_URL>
+	                    <DB_USER>${env.DB_USER}</DB_USER>
+	                    <DB_PASSWORD>${env.DB_PASSWORD}</DB_PASSWORD>
+	                    <JWT_SECRET>${env.JWT_SECRET}</JWT_SECRET>
+	                </systemPropertyVariables>
+	            </configuration>
+	        </plugin>
 		</plugins>
 	</build>
 

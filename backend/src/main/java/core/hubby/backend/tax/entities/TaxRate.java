@@ -23,7 +23,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -58,7 +57,7 @@ public class TaxRate implements Serializable {
 	private String taxType;
 	
 	@OneToMany(mappedBy = "taxRate", fetch = FetchType.EAGER)
-	private TaxComponent taxComponent;
+	private Set<TaxComponent> taxComponent;
 	
 	// Shown for display purposes.
 	// Presents the tax rate to the end-user in a clear and understandable format.

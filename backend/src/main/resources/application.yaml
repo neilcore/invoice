@@ -13,17 +13,17 @@ spring:
       create-schemas: true
       schemas: "app_sc"
       default-schema: "app_sc"
-      url: "jdbc:postgresql://localhost:5070/couverdb"
-      user: "root"
-      password: "password"
+      url: ${DB_URL}
+      user: ${DB_USER}
+      password: ${DB_PASSWORD}
       execute-in-transaction: true
       locations: classpath:db/migration
       clean-disabled: false
    # Configure datasource
    datasource:
       driver-class-name: org.postgresql.Driver
-      username: "root"
-      password: "password"
+      username: ${DB_USER}
+      password: ${DB_PASSWORD}
    # Configure Hibernate
    jpa:
       database-platform: org.hibernate.dialect.PostgreSQLDialect 
@@ -36,7 +36,7 @@ spring:
    # Configure for JWT auth
    app:
       jwt:
-         secret: "5da7abccd68264a5dadf70e16ccd2a48e5174651a08af2a366f8a28e39c88c0c"
+         secret: ${JWT_SECRET}
          access-token: 480000
          refresh-token: 1.44e+6
       details:

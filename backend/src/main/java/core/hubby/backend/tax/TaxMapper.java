@@ -7,13 +7,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
 
 import core.hubby.backend.tax.controller.dto.TaxRateRequests;
 import core.hubby.backend.tax.entities.TaxRate;
 import core.hubby.backend.tax.entities.embedded.TaxTypes;
 import core.hubby.backend.tax.repositories.TaxRateRepository;
 
-@Mapper
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public abstract class TaxMapper {
 	
 	public Set<TaxRateRequests> taxTypeToTaxRateRequests(Set<TaxTypes> collections) {
@@ -55,13 +56,13 @@ public abstract class TaxMapper {
 	}
 	
 	public TaxRateRequests toTaxRateRequest(TaxRate tx) {
-		List<TaxRateRequests.Component> component = List.of(
-				new TaxRateRequests.Component(
-						tx.getTaxComponent().getName(), tx.getTaxComponent().getRate(),
-						tx.getTaxComponent().getIsCompound(),
-						tx.getTaxComponent().getNonRecoverable()
-				)
-		);
+		List<TaxRateRequests.Component> component = tx.getTaxComponent().stream()
+				.map(cm -> new TaxRateRequests.Component(
+						cm.getName(), cm.getRate(),
+						cm.getIsCompound(),
+						cm.getNonRecoverable()
+				)).toList();
+
 		TaxRateRequests.ApplyToAccounts accounts = new TaxRateRequests.ApplyToAccounts(
 				tx.getApplyToAssetAccount(), tx.getApplyToEquityAccount(),
 				tx.getApplyToExpensesAccount(), tx.getApplyToLiabilitiesAccount(),

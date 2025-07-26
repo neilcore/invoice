@@ -55,6 +55,8 @@ public class TaxRateService {
 		Set<TaxRate> taxrates = requests.stream()
 				.map(request -> {
 					TaxRate newTaxRate = new TaxRate();
+					// TODO - can have multiple tax components
+					// right now it's still a single tax component
 					TaxComponent taxComponent = new TaxComponent();
 					
 					// Set organization object
@@ -72,7 +74,7 @@ public class TaxRateService {
 						taxComponent.setIsCompound(component.isCompound());
 						taxComponent.setNonRecoverable(component.nonRecoverable());
 					});
-					newTaxRate.setTaxComponent(taxComponent);
+					newTaxRate.setTaxComponent(Set.of(taxComponent));
 					
 					// Set tax type
 					newTaxRate.setTaxType(request.taxType());

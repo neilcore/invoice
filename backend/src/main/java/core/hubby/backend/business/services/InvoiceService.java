@@ -190,9 +190,9 @@ public class InvoiceService {
 					 * Used as an override if the default Tax Code for the
 					 * selected AccountCode is not correct.
 					 */
-					TaxType taxType = taxTypeRepository.findById(lineItem.taxType())
-							.orElseThrow(() -> new EntityNotFoundException("TaxType object not found."));
-					createLineItem.setTaxType(taxType);
+//					TaxType taxType = taxTypeRepository.findById(lineItem.taxType())
+//							.orElseThrow(() -> new EntityNotFoundException("TaxType object not found."));
+//					createLineItem.setTaxType(taxType);
 					
 					
 					return createLineItem;

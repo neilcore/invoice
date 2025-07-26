@@ -74,9 +74,9 @@ public class LineItems implements Serializable {
 	@NotNull(message = "Line amount cannot be blank")
 	private Double lineAmount;
 	
-	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "tax_type", referencedColumnName = "id")
-	private TaxType taxType;
+//	@ManyToOne(cascade = CascadeType.ALL)
+//	@JoinColumn(name = "tax_type", referencedColumnName = "id")
+//	private TaxType taxType;
 	
 	// auto-calculated
 	@Column(name = "tax_amount", nullable = false)

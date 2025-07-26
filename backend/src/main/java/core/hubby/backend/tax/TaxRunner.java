@@ -2,6 +2,7 @@ package core.hubby.backend.tax;
 import java.util.Set;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import core.hubby.backend.tax.entities.TaxType;
@@ -11,6 +12,7 @@ import core.hubby.backend.tax.repositories.TaxTypeRepository;
 import lombok.RequiredArgsConstructor;
 
 @Component
+@Profile("dev")
 @RequiredArgsConstructor
 public class TaxRunner implements CommandLineRunner {
 	private static final String COMPONENT_GST = TaxComponentRepository.COMPONENT_GST;
