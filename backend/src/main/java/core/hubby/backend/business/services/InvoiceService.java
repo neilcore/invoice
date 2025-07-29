@@ -14,9 +14,7 @@ import core.hubby.backend.business.repositories.InvoiceRepository;
 import core.hubby.backend.business.repositories.OrganizationRepository;
 import core.hubby.backend.contacts.entities.Contact;
 import core.hubby.backend.contacts.services.ContactService;
-import core.hubby.backend.tax.entities.TaxType;
 import core.hubby.backend.tax.repositories.TaxTypeRepository;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
