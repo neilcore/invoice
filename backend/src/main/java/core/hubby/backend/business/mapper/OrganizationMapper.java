@@ -39,14 +39,19 @@ public abstract class OrganizationMapper {
 		// Setup organization user information
 		Set<OrganizationDetailsResponse.Users> users = 
 				organization.getOrganizationUsers().stream()
-				.map(user -> new OrganizationDetailsResponse.Users(
-						Map.of(
-								"userID", user.getUserId().getUserId().toString(),
-								"name", user.getUserId().getFirstName() + " " + user.getUserId().getLastName()
-						),
-						user.getUserRole(),
-						user.getUserJoined()
-				))
+				.map(user -> {
+					OrganizationDetailsResponse.Users buildUser = 
+							new OrganizationDetailsResponse.Users(
+									Map.of(
+											"userID", user.getUserId().getUserId().toString(),
+											"name", user.getUserId().getFirstName() + " " + user.getUserId().getLastName()
+									),
+									user.getUserRole(),
+									user.getUserJoined()
+							);
+					
+					return buildUser;
+				})
 				.collect(Collectors.toSet());
 		
 		OrganizationDetailsResponse response = new OrganizationDetailsResponse(
