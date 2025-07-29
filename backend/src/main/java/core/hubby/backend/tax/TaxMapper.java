@@ -27,19 +27,23 @@ public abstract class TaxMapper {
 	}
 	
 	public TaxRateRequests taxTypeToTaxRateRequest(TaxTypes type) {
+		List<TaxRateRequests.Component> components = List.of(new TaxRateRequests.Component(
+				type.getComponent(),
+				new BigDecimal(type.getRate()),
+				null,
+				null
+				
+		));
+		TaxRateRequests.ApplyToAccounts accounts = 
+				new TaxRateRequests.ApplyToAccounts(null, null, null, null, null);
+		
 		return new TaxRateRequests(
 				type.getName(),
 				type.getType(),
 				// Set tax components
-				List.of(new TaxRateRequests.Component(
-						type.getComponent(),
-						new BigDecimal(type.getRate()),
-						null,
-						null
-						
-				)),
+				components,
 				new BigDecimal(type.getRate()),
-				new TaxRateRequests.ApplyToAccounts(null, null, null, null, null),
+				accounts,
 				// Whether it is system defined or not.
 				// It is customizable if it is not system defined
 				type.getSystemDefined(),
