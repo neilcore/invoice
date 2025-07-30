@@ -1,5 +1,6 @@
 package core.hubby.backend.business.entities;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -82,10 +83,10 @@ public class Invoice implements java.io.Serializable {
 	
 	@Column(name = "grand_total", nullable = false)
 	@NotNull(message = "grandTotal cannot be null.")
-	private Double grandTotal;
+	private BigDecimal grandTotal;
 	
 	@Column(name = "total_tax")
-	private Double totalTax; // value-added tax
+	private BigDecimal totalTax; // value-added tax
 	
 	public void setLineAmountTypes(String lineAmountTypes) {
 		if (lineAmountTypes.isEmpty() || lineAmountTypes.isBlank()) {

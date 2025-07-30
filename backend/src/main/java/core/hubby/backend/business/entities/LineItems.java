@@ -1,6 +1,7 @@
 package core.hubby.backend.business.entities;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 import core.hubby.backend.tax.entities.TaxType;
@@ -74,14 +75,14 @@ public class LineItems implements Serializable {
 	@NotNull(message = "Line amount cannot be blank")
 	private Double lineAmount;
 	
-//	@ManyToOne(cascade = CascadeType.ALL)
-//	@JoinColumn(name = "tax_type", referencedColumnName = "id")
-//	private TaxType taxType;
+	@Column(name = "tax_type", nullable = false)
+	@NotBlank(message = "taxType attribute cannot be blank.")
+	private String taxType;
 	
 	// auto-calculated
-	@Column(name = "tax_amount", nullable = false)
+	@Column(name = "tax_amount", nullable = false, precision = 7, scale = 2)
 	@NotNull(message = "Tax amount cannot be null")
-	private Double taxAmount;
+	private BigDecimal taxAmount;
 	
 	@Column(name = "discount_rate")
 	private Integer discountRate;
