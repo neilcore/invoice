@@ -56,4 +56,12 @@ public class TaxComponent implements Serializable {
 	
 	@Column(name = "non_recoverable")
 	private Boolean nonRecoverable;
+	
+	// Constructor without taxRate
+	public TaxComponent(String name, BigDecimal rate, Boolean isCompound, Boolean nonRecoverable) {
+		this.name = name;
+		this.rate = rate;
+		this.isCompound = isCompound;
+		this.nonRecoverable = nonRecoverable;
+	}
 }
