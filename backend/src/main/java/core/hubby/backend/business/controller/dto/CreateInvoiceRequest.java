@@ -12,6 +12,7 @@ import core.hubby.backend.business.validation.annotation.ValidateInvoice;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
@@ -47,8 +48,8 @@ public record CreateInvoiceRequest(
 			@Digits(fraction = 2, integer = 6)
 			Double unitAmount,
 			String accountCode,
-			@Pattern(regexp = "^[A-Z](?:[A-Z]|_[A-Z])*$", message = "Invalid value for taxType component.")
-			UUID taxType,
+			@NotBlank(message = "taxType attribute cannot be blank.")
+			String taxType,
 			Integer discountRate
 	) {
 	}
