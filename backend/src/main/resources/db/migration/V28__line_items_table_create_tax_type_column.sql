@@ -1,0 +1,2 @@
+ALTER TABLE line_items
+ADD COLUMN tax_type VARCHAR(100) NOT NULL;

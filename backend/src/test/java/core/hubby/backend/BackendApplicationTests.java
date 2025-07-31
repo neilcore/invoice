@@ -26,9 +26,8 @@ class BackendApplicationTests {
 	void contextLoads() {
 	}
 	
-	/**
-	 * Test some third party services: CountryService
-	 */
+	// CountryService - validate if country code
+	// exists or not
 	@Test
 	void validateCountry() {
 		boolean response = countryService
@@ -45,6 +44,7 @@ class BackendApplicationTests {
 				countryService.returnCurrency("PH");
 		
 		assertThat(response.getName())
+		.doesNotContain("euro")
 		.contains("Philippine", "peso");
 		
 		assertThat(response.getSymbol())

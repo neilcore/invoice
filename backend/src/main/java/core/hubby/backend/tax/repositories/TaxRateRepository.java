@@ -1,5 +1,6 @@
 package core.hubby.backend.tax.repositories;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,4 +21,13 @@ public interface TaxRateRepository extends JpaRepository<TaxRate, UUID> {
 	
 	@Query("SELECT tr FROM TaxRate tr WHERE tr.organization = :organizationID")
 	Optional<TaxRate> findTaxRateByOrganization(@Param("organizationID") UUID organizationID);
+	
+	@Query(
+			"SELECT tr.effectiveRate FROM TaxRate tr WHERE tr.organization = :organizationId" +
+			" AND tr.taxType = :type"
+	)
+	Optional<BigDecimal> findEffectiveRateByOrganziationId(
+			@Param("organizationID") UUID organizationId,
+			@Param("type") String type
+	);
 }

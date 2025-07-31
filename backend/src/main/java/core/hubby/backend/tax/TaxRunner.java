@@ -26,13 +26,13 @@ public class TaxRunner implements CommandLineRunner {
 		
 		au.setLabel("AU");
 		Set<TaxTypes> AUTypes = Set.of(
-				new TaxTypes("OUTPUT", 10.00, "GST on Income", COMPONENT_GST, false),
-				new TaxTypes("INPUT", 10.00, "GST on Expenses", COMPONENT_GST, false),
-				new TaxTypes("BASEEXCLUDED", 0.00, "BAS Excluded", COMPONENT_GST, false),
+				new TaxTypes("OUTPUT", 10.00, "GST on Income", COMPONENT_GST, true),
+				new TaxTypes("INPUT", 10.00, "GST on Expenses", COMPONENT_GST, true),
+				new TaxTypes("BASEEXCLUDED", 0.00, "BAS Excluded", COMPONENT_GST, true),
 				new TaxTypes("EXEMPTEXPENSES", 0.00, "GST Free Expenses", COMPONENT_GST, true),
-				new TaxTypes("EXEMPTOUTPUT", 0.00, "GST Free Income", COMPONENT_GST, false),
-				new TaxTypes("BASEXCLUDED", 0.00, "BAS Excluded", COMPONENT_GST, false),
-				new TaxTypes("GSTONIMPORTS", 0.00, "GST Free Expenses", COMPONENT_GST, false)
+				new TaxTypes("EXEMPTOUTPUT", 0.00, "GST Free Income", COMPONENT_GST, true),
+				new TaxTypes("BASEXCLUDED", 0.00, "BAS Excluded", COMPONENT_GST, true),
+				new TaxTypes("GSTONIMPORTS", 0.00, "GST Free Expenses", COMPONENT_GST, true)
 		);
 		au.setTypeCollections(AUTypes);
 		
@@ -42,8 +42,8 @@ public class TaxRunner implements CommandLineRunner {
 		
 		ph.setLabel("PH");
 		Set<TaxTypes> PHTypes = Set.of(
-				new TaxTypes("OUTPUT", 12.00, "VAT on Income", COMPONENT_VAT, false),
-				new TaxTypes("INPUT", 12.00, "VAT on Expenses", COMPONENT_VAT, false),
+				new TaxTypes("OUTPUT", 12.00, "VAT on Income", COMPONENT_VAT, true),
+				new TaxTypes("INPUT", 12.00, "VAT on Expenses", COMPONENT_VAT, true),
 				new TaxTypes("BASEEXCLUDED", 0.00, "BAS Excluded", null, true)
 		);
 		ph.setTypeCollections(PHTypes);
@@ -54,8 +54,8 @@ public class TaxRunner implements CommandLineRunner {
 		
 		us.setLabel("US");
 		Set<TaxTypes> USTypes = Set.of(
-				new TaxTypes("OUTPUT", 0.00, "Tax on Sales", COMPONENT_GST, false),
-				new TaxTypes("INPUT", 0.00, "Tax on Purchases", COMPONENT_GST, false),
+				new TaxTypes("OUTPUT", 0.00, "Tax on Sales", COMPONENT_GST, true),
+				new TaxTypes("INPUT", 0.00, "Tax on Purchases", COMPONENT_GST, true),
 				new TaxTypes("NONE", 0.00, "Tax Exempt", null, true),
 				new TaxTypes("GSTONIMPORTS", 0.00, "Sales Tax on Imports", null, true)
 		);

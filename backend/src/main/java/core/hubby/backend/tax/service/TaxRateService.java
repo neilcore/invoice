@@ -1,4 +1,5 @@
 package core.hubby.backend.tax.service;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -48,6 +49,14 @@ public class TaxRateService {
 		
 	}
 	
+	/**
+	 * This method will create tax rate object
+	 * @param organizationID - accepts {@linkplain java.util.UUID} object type.
+	 * @param requests - accepts {@linkplain java.util.Set} that holds {@linkplain TaxRateRequests}
+	 * objects.
+	 * @return - {@linkplain java.util.Set} that holds {@linkplain TaxRateRequests}
+	 * objects.
+	 */
 	public Set<TaxRateRequests> createTaxRates(
 			@NotNull UUID organizationID,
 			Set<TaxRateRequests> requests
@@ -55,13 +64,13 @@ public class TaxRateService {
 		Set<TaxRate> taxrates = requests.stream()
 				.map(request -> {
 					TaxRate newTaxRate = new TaxRate();
-					// TODO - can have multiple tax components
-					// right now it's still a single tax component
-					TaxComponent taxComponent = new TaxComponent();
+
+					Set<TaxComponent> taxComponents = new HashSet<>();
 					
 					// Set organization object
 					Organization organizationObj = organizationRepository.findById(organizationID)
 							.orElseThrow(() -> new EntityNotFoundException("Organization object not found."));
+					
 					newTaxRate.setOrganization(organizationObj);
 					
 					newTaxRate.setName(request.name());
@@ -69,12 +78,14 @@ public class TaxRateService {
 					// Set tax component
 					request.taxComponents().stream()
 					.forEach(component -> {
-						taxComponent.setName(component.name());
-						taxComponent.setRate(component.rate());
-						taxComponent.setIsCompound(component.isCompound());
-						taxComponent.setNonRecoverable(component.nonRecoverable());
+						taxComponents.add(new TaxComponent(
+								component.name(),
+								component.rate(),
+								component.isCompound(),
+								component.nonRecoverable()
+						));
 					});
-					newTaxRate.setTaxComponent(Set.of(taxComponent));
+					newTaxRate.setTaxComponent(taxComponents);
 					
 					// Set tax type
 					newTaxRate.setTaxType(request.taxType());
