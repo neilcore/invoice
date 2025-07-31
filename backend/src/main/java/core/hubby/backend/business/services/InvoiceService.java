@@ -1,9 +1,12 @@
 package core.hubby.backend.business.services;
+import java.math.BigDecimal;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
+
 import org.springframework.stereotype.Service;
 
 import core.hubby.backend.business.controller.dto.CreateInvoiceRequest;
@@ -14,6 +17,7 @@ import core.hubby.backend.business.repositories.InvoiceRepository;
 import core.hubby.backend.business.repositories.OrganizationRepository;
 import core.hubby.backend.contacts.entities.Contact;
 import core.hubby.backend.contacts.services.ContactService;
+import core.hubby.backend.tax.repositories.TaxRateRepository;
 import core.hubby.backend.tax.repositories.TaxTypeRepository;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +34,7 @@ public class InvoiceService {
 	private final OrganizationRepository organizationRepository;
 	private final InvoiceRepository invoiceRepository;
 	private final ContactService contactService;
+	private final TaxRateRepository taxRateRepository;
 	private final TaxTypeRepository taxTypeRepository;
 	
 	/**
@@ -95,7 +100,7 @@ public class InvoiceService {
 		setLineItems(
 				invoice,
 				request.lineItems(),
-				request.lineAmountType(),
+				request.lineAmountType(), // TODO - clarify once and for all it's effect to others
 				getContactObject.get().getDefaultDiscount(),
 				organizationId
 		);
@@ -167,7 +172,9 @@ public class InvoiceService {
 							|| lineItem.discountRate() != 0 ?
 							lineItem.discountRate() : customerDefaultDiscount != null ?
 									customerDefaultDiscount : null;
-					
+					/**
+					 * Calculate the line amount
+					 */
 					Double calculateLineAmount = null;
 					calculateLineAmount = discountRateIfExists != null ?
 							lineItem.quantity() * lineItem.unitAmount() * ((100 - discountRateIfExists) / 100)
@@ -176,21 +183,25 @@ public class InvoiceService {
 					if (calculateLineAmount != null) {
 						createLineItem.setDiscountRate(discountRateIfExists);
 					}
-
+					
+					/**
+					 * Calculate tax amount by:
+					 * - calculate net line amount
+					 * - get the tax type rate
+					 */
+					BigDecimal netLineAmount = new BigDecimal(lineItem.quantity() * lineItem.unitAmount());
+					BigDecimal effectiveRate = taxRateRepository.findEffectiveRateByOrganziationId(
+							organizationId, lineItem.taxType()).get();
+					
+					BigDecimal calculateTaxAmount = netLineAmount.multiply(effectiveRate);
+							
 					createLineItem.setDescription(lineItem.description());
 					createLineItem.setQuantity(lineItem.quantity());
 					createLineItem.setUnitAmount(lineItem.unitAmount());
 					createLineItem.setLineAmount(calculateLineAmount);
 					createLineItem.setAccountCode(lineItem.accountCode());
-					
-					/**
-					 * Set tax type
-					 * Used as an override if the default Tax Code for the
-					 * selected AccountCode is not correct.
-					 */
-//					TaxType taxType = taxTypeRepository.findById(lineItem.taxType())
-//							.orElseThrow(() -> new EntityNotFoundException("TaxType object not found."));
-//					createLineItem.setTaxType(taxType);
+					createLineItem.setTaxAmount(calculateTaxAmount);
+					createLineItem.setTaxType(lineItem.taxType());
 					
 					
 					return createLineItem;
@@ -201,9 +212,6 @@ public class InvoiceService {
 		
 		return invoice;
 	}
-	private void calculateTaxAmount() {
-		
-	}
 	
 	/**
 	 * This method will calculate the invoice's subTotal,
@@ -212,14 +220,26 @@ public class InvoiceService {
 	 * @return - returns modified {@linkplain Invoice} object
 	 */
 	private Invoice calculateInvoice(Invoice invoice) {
+		/**
+		 * This is the sum of all LineAmount values across all LineItems on the invoice,
+		 * before any taxes are applied.
+		 */
 		Double subTotal = invoice.getLineItems().stream()
 				.mapToDouble(lineAmount -> lineAmount.getLineAmount())
 				.sum();
 		
 		invoice.setSubTotal(subTotal);
 		
-		// TODO need to add totalTax here
-		// TODO need to add grandTotal here
+		// Calculate and set total tax
+		BigDecimal totalTax = BigDecimal.ZERO;
+		for (LineItems lt: invoice.getLineItems()) {
+			totalTax = totalTax.add(lt.getTaxAmount());
+		}
+		invoice.setTotalTax(totalTax);
+		// Calculate and set grand total
+		BigDecimal grandTotal = new BigDecimal(subTotal).add(totalTax);
+		invoice.setGrandTotal(grandTotal);
+		
 		return invoice;
 	}
 	
