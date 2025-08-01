@@ -13,7 +13,7 @@ public record TaxRateRequests(
 		List<Component> taxComponents,
 		@NotNull(message = "effectiveRate component cannot be null.")
 		BigDecimal effectiveRate,
-		ApplyToAccounts ApplyToAccounts,
+		ApplyToAccounts applyToAccounts,
 		Boolean systemDefined,
 		@NotBlank(message = "status component cannot be blank.")
 		String status

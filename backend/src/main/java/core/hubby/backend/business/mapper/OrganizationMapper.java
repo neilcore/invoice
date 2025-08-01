@@ -5,62 +5,49 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.MappingConstants;
-
+import org.mapstruct.Mappings;
+import org.mapstruct.NullValueMappingStrategy;
+import org.mapstruct.Mapping;
 import core.hubby.backend.business.controller.dto.OrganizationDetailsResponse;
 import core.hubby.backend.business.entities.Organization;
+import core.hubby.backend.business.entities.OrganizationType;
+import core.hubby.backend.business.entities.embedded.OrganizationUsers;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
-public abstract class OrganizationMapper {
+@Mapper(nullValueMappingStrategy = NullValueMappingStrategy.RETURN_NULL, componentModel = "spring")
+public interface OrganizationMapper {
+	@Mappings({
+		@Mapping(source = "id", target = "organizationId"),
+		@Mapping(source = "profileImage", target = "organizationInfo.profileImage"),
+		@Mapping(source = "displayName", target = "organizationInfo.displayName"),
+		@Mapping(source = "legalName", target = "organizationInfo.legalName"),
+		@Mapping(source = "organizationDescription", target = "organizationInfo.organizationDescription"),
+		@Mapping(source = "organizationType", target = "organizationInfo.organizationType"),
+		@Mapping(source = "country", target = "contactInformation.countryCode"),
+		@Mapping(source = "address", target = "contactInformation.address"),
+		@Mapping(source = "email", target = "contactInformation.email"),
+		@Mapping(source = "website", target = "contactInformation.website"),
+		@Mapping(source = "phoneNo", target = "contactInformation.phoneNo"),
+		@Mapping(source = "externalLinks", target = "contactInformation.externalLinks"),
+		@Mapping(source = "organizationUsers", target = "organizationUsers")
+	})
+	OrganizationDetailsResponse toOrganizationResponse(Organization org);
 	
-	public OrganizationDetailsResponse toOrganizationResponse(Organization organization) {
-		// Setup basic information
-		OrganizationDetailsResponse.BasicInformation basicInformation =
-				new OrganizationDetailsResponse.BasicInformation(
-						organization.getProfileImage(), organization.getDisplayName(),
-						organization.getLegalName(), organization.getOrganizationDescription(),
-						Map.of(
-								"id", organization.getOrganizationType().getId().toString(),
-								"name", organization.getOrganizationType().getName()
-						)
-				);
+	default Map<String, String> mapObjectToMap(OrganizationType org) {
 		
-		// Setup contact information
-		OrganizationDetailsResponse.ContactInformation contactInfo = 
-				new OrganizationDetailsResponse.ContactInformation(
-						organization.getCountry(),
-						organization.getAddress(),
-						organization.getEmail(),
-						organization.getWebsite(),
-						organization.getPhoneNo(),
-						organization.getExternalLinks()
-				);
-		
-		// Setup organization user information
-		Set<OrganizationDetailsResponse.Users> users = 
-				organization.getOrganizationUsers().stream()
-				.map(user -> {
-					OrganizationDetailsResponse.Users buildUser = 
-							new OrganizationDetailsResponse.Users(
-									Map.of(
-											"userID", user.getUserId().getUserId().toString(),
-											"name", user.getUserId().getFirstName() + " " + user.getUserId().getLastName()
-									),
-									user.getUserRole(),
-									user.getUserJoined()
-							);
-					
-					return buildUser;
-				})
+		return Map.of(
+				"id", org.getId().toString(),
+				"name", org.getName()
+		);
+	}
+	
+	default Set<OrganizationDetailsResponse.Users> organizationUsers(Set<OrganizationUsers> users) {
+		Set<OrganizationDetailsResponse.Users> mapUsers = users.stream()
+				.map(usr -> new OrganizationDetailsResponse.Users(
+						Map.of("id", usr.getUserId().getUserId().toString(), "name", usr.getUserId().getFirstName() + " " + usr.getUserId().getLastName()),
+						usr.getUserRole(), usr.getUserJoined()
+				))
 				.collect(Collectors.toSet());
 		
-		OrganizationDetailsResponse response = new OrganizationDetailsResponse(
-				organization.getId(),
-				basicInformation,
-				contactInfo,
-				users
-		);
-		
-		return response;
+		return mapUsers;
 	}
 }

@@ -1,87 +1,82 @@
 package core.hubby.backend.tax;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.MappingConstants;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
+import org.mapstruct.NullValueMappingStrategy;
 
 import core.hubby.backend.tax.controller.dto.TaxRateRequests;
 import core.hubby.backend.tax.entities.TaxRate;
 import core.hubby.backend.tax.entities.embedded.TaxTypes;
 import core.hubby.backend.tax.repositories.TaxRateRepository;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
-public abstract class TaxMapper {
+@Mapper(
+		imports = TaxRateRepository.class,
+		nullValueMappingStrategy = NullValueMappingStrategy.RETURN_NULL,
+		componentModel = "spring"
+)
+public interface TaxMapper {
 	
-	public Set<TaxRateRequests> taxTypeToTaxRateRequests(Set<TaxTypes> collections) {
-		Set<TaxRateRequests> taxRates = new HashSet<>();
-		for (TaxTypes type: collections) {
-			taxRates.add(taxTypeToTaxRateRequest(type));
-		}
-		
-		return taxRates;
-	}
+	Set<TaxRateRequests> taxTypeToTaxRateRequests(Set<TaxTypes> types);
 	
-	public TaxRateRequests taxTypeToTaxRateRequest(TaxTypes type) {
+	@Mappings({
+		@Mapping(source = "type", target = "taxType"),
+		@Mapping(source = "rate", target = "effectiveRate"),
+		@Mapping(target = "status", expression = "java(TaxRateRepository.TAXRATE_STATUS_ACTIVE)"),
+		@Mapping(target = "taxComponents", expression = "java(taxTypeToComponents(type))"),
+		@Mapping(target = "applyToAccounts", ignore = true)
+	})
+	TaxRateRequests taxTypeToTaxRateRequest(TaxTypes type);
+	
+	/**
+	 * This is to map for DTO's components objects
+	 * @param types - {@linkplain TaxTypes} object type.
+	 * @return - {@linkplain java.util.Link} that holds {@linkplain TaxRateRequests.Component} objects.
+	 */
+	default List<TaxRateRequests.Component> taxTypeToComponents(TaxTypes types) {
 		List<TaxRateRequests.Component> components = List.of(new TaxRateRequests.Component(
-				type.getComponent(),
-				new BigDecimal(type.getRate()),
+				types.getComponent(),
+				new BigDecimal(types.getRate()),
 				null,
 				null
-				
 		));
-		TaxRateRequests.ApplyToAccounts accounts = 
-				new TaxRateRequests.ApplyToAccounts(null, null, null, null, null);
-		
-		return new TaxRateRequests(
-				type.getName(),
-				type.getType(),
-				// Set tax components
-				components,
-				new BigDecimal(type.getRate()),
-				accounts,
-				// Whether it is system defined or not.
-				// It is customizable if it is not system defined
-				type.getSystemDefined(),
-				// Set all status to active
-				TaxRateRepository.TAXRATE_STATUS_ACTIVE
-		);
+		return components;
 	}
 	
-	public Set<TaxRateRequests> toTaxRateRequests(List<TaxRate> taxRates) {
-		Set<TaxRateRequests> taxRateRequests = taxRates.stream()
-				.map(tx -> toTaxRateRequest(tx)).collect(Collectors.toSet());
-		
-		return taxRateRequests;
-	}
+	Set<TaxRateRequests> toTaxRateRequests(List<TaxRate> taxRates);
 	
-	public TaxRateRequests toTaxRateRequest(TaxRate tx) {
-		List<TaxRateRequests.Component> component = tx.getTaxComponent().stream()
+	@Mappings({
+		@Mapping(target = "taxComponents", source = "tx"),
+		@Mapping(target = "effectiveRate", source = "effectiveRate"),
+		@Mapping(target = "status", expression = "java(TaxRateRepository.TAXRATE_STATUS_ACTIVE)"),
+		@Mapping(target = "applyToAccounts", source = "tx"),
+		@Mapping(target = "systemDefined", ignore = true)
+	})
+	TaxRateRequests toTaxRateRequest(TaxRate tx);
+	
+	default List<TaxRateRequests.Component> taxRateToComponent(TaxRate rate) {
+		List<TaxRateRequests.Component> component = rate.getTaxComponent().stream()
 				.map(cm -> new TaxRateRequests.Component(
 						cm.getName(), cm.getRate(),
 						cm.getIsCompound(),
 						cm.getNonRecoverable()
 				)).toList();
-
+		
+		return component;
+	}
+	
+	default TaxRateRequests.ApplyToAccounts taxRateToApplyAccounts(TaxRate tx) {
 		TaxRateRequests.ApplyToAccounts accounts = new TaxRateRequests.ApplyToAccounts(
 				tx.getApplyToAssetAccount(), tx.getApplyToEquityAccount(),
 				tx.getApplyToExpensesAccount(), tx.getApplyToLiabilitiesAccount(),
 				tx.getApplyToRevenueAccount()
 		);
 		
-		TaxRateRequests requests = new TaxRateRequests(
-				tx.getName(),
-				tx.getTaxType(),
-				component,
-				tx.getEffectiveRate(),
-				accounts,
-				null,
-				tx.getStatus()
-		);
-		return requests;
+		return accounts;
 	}
+
 }
