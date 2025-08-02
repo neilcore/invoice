@@ -1,11 +1,11 @@
 package core.hubby.backend.business.services;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
 
 import org.springframework.stereotype.Service;
 
@@ -146,6 +146,7 @@ public class InvoiceService {
 		Optional<String> organizationDefaultTaxPurchase = 
 				organizationRepository.findLineAmountType(organizationId);
 		
+		// Set line amount type
 		if (!lineAmountTypeRequest.isBlank() && !lineAmountTypeRequest.isEmpty()) {
 			lineAmountType = Optional.of(lineAmountTypeRequest);
 		} else if (lineAmountTypeRequest.isBlank() || lineAmountTypeRequest.isEmpty()) {
@@ -157,7 +158,6 @@ public class InvoiceService {
 				lineAmountType = Optional.of(InvoiceRepository.INVOICE_LINE_AMOUNT_TYPE_EXCLUSIVE);
 			}
 		}
-		
 		invoice.setLineAmountTypes(lineAmountType.get());
 		
 		Set<LineItems> lineItems = lineItemsSet
@@ -193,7 +193,23 @@ public class InvoiceService {
 					BigDecimal effectiveRate = taxRateRepository.findEffectiveRateByOrganziationId(
 							organizationId, lineItem.taxType()).get();
 					
-					BigDecimal calculateTaxAmount = netLineAmount.multiply(effectiveRate);
+					BigDecimal calculateTaxAmount = BigDecimal.ZERO;
+					if (lineAmountTypeRequest.compareToIgnoreCase(InvoiceRepository.INVOICE_LINE_AMOUNT_TYPE_EXCLUSIVE) == 0) {
+						// LineAmountTypes: "Exclusive"
+						calculateTaxAmount = netLineAmount.multiply(effectiveRate);
+					} else if (lineAmountTypeRequest.compareToIgnoreCase(InvoiceRepository.INVOICE_LINE_AMOUNT_TYPE_INCLUSIVE) == 0) {
+						// LineAmountTypes: "Inclusive"
+						BigDecimal grossPrice = new BigDecimal(lineItem.unitAmount());
+						BigDecimal taxRate = effectiveRate.divide(new BigDecimal("100"), 2, RoundingMode.HALF_DOWN);
+						
+				        // We should first add 1 to the effective rate before dividing.
+				        BigDecimal one = new BigDecimal("1");
+				        BigDecimal onePlusTaxRate = one.add(taxRate);
+						BigDecimal netPrice = grossPrice.divide(onePlusTaxRate);
+						calculateTaxAmount = grossPrice.subtract(netPrice);
+					} else { // LineAmountTypes: "NoTax"
+						calculateTaxAmount = new BigDecimal("0.00");
+					}
 							
 					createLineItem.setDescription(lineItem.description());
 					createLineItem.setQuantity(lineItem.quantity());
