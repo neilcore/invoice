@@ -1,0 +1,2 @@
+ALTER TABLE line_items
+ADD COLUMN total NUMERIC(7, 2) NOT NULL;

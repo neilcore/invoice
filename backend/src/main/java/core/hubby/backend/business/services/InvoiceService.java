@@ -164,17 +164,15 @@ public class InvoiceService {
 				.stream()
 				.map( lineItem -> {
 					LineItems createLineItem = new LineItems();
-					/**
-					 * Check if line item discount rate is specified.
-					 * If not, check if customer's default discount rate is specified.
-					 */
+
+					// Check if line item discount rate is specified.
+					// If not, check if customer's default discount rate is specified.
 					Integer discountRateIfExists = lineItem.discountRate() != null
 							|| lineItem.discountRate() != 0 ?
 							lineItem.discountRate() : customerDefaultDiscount != null ?
 									customerDefaultDiscount : null;
-					/**
-					 * Calculate the line amount
-					 */
+					
+					// Calculate the line amount
 					Double calculateLineAmount = null;
 					calculateLineAmount = discountRateIfExists != null ?
 							lineItem.quantity() * lineItem.unitAmount() * ((100 - discountRateIfExists) / 100)
@@ -194,9 +192,13 @@ public class InvoiceService {
 							organizationId, lineItem.taxType()).get();
 					
 					BigDecimal calculateTaxAmount = BigDecimal.ZERO;
+					BigDecimal lineItemTotal = BigDecimal.ZERO;
+					
 					if (lineAmountTypeRequest.compareToIgnoreCase(InvoiceRepository.INVOICE_LINE_AMOUNT_TYPE_EXCLUSIVE) == 0) {
 						// LineAmountTypes: "Exclusive"
 						calculateTaxAmount = netLineAmount.multiply(effectiveRate);
+						lineItemTotal = new BigDecimal(lineItem.unitAmount()).add(effectiveRate);
+						
 					} else if (lineAmountTypeRequest.compareToIgnoreCase(InvoiceRepository.INVOICE_LINE_AMOUNT_TYPE_INCLUSIVE) == 0) {
 						// LineAmountTypes: "Inclusive"
 						BigDecimal grossPrice = new BigDecimal(lineItem.unitAmount());
@@ -207,8 +209,11 @@ public class InvoiceService {
 				        BigDecimal onePlusTaxRate = one.add(taxRate);
 						BigDecimal netPrice = grossPrice.divide(onePlusTaxRate);
 						calculateTaxAmount = grossPrice.subtract(netPrice);
+						lineItemTotal = new BigDecimal(lineItem.unitAmount());
+						
 					} else { // LineAmountTypes: "NoTax"
 						calculateTaxAmount = new BigDecimal("0.00");
+						lineItemTotal = new BigDecimal(lineItem.unitAmount());
 					}
 							
 					createLineItem.setDescription(lineItem.description());
@@ -218,6 +223,7 @@ public class InvoiceService {
 					createLineItem.setAccountCode(lineItem.accountCode());
 					createLineItem.setTaxAmount(calculateTaxAmount);
 					createLineItem.setTaxType(lineItem.taxType());
+					createLineItem.setTotal(lineItemTotal);
 					
 					
 					return createLineItem;

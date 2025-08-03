@@ -86,4 +86,8 @@ public class LineItems implements Serializable {
 	
 	@Column(name = "discount_rate")
 	private Integer discountRate;
+	
+	@Column(nullable = false, precision = 7, scale = 2)
+	@NotNull(message = "total attribute cannot be null.")
+	private BigDecimal total;
 }
