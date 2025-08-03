@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import core.hubby.backend.accounts.services.AccountService;
 import core.hubby.backend.business.controller.dto.CreateInvoiceRequest;
 import core.hubby.backend.business.controller.dto.InvoiceTaxEligibility;
 import core.hubby.backend.business.entities.Invoice;
@@ -34,6 +35,7 @@ public class InvoiceService {
 	private final OrganizationRepository organizationRepository;
 	private final InvoiceRepository invoiceRepository;
 	private final ContactService contactService;
+	private final AccountService accountService;
 	private final TaxRateRepository taxRateRepository;
 	private final TaxTypeRepository taxTypeRepository;
 	
@@ -100,7 +102,7 @@ public class InvoiceService {
 		setLineItems(
 				invoice,
 				request.lineItems(),
-				request.lineAmountType(), // TODO - clarify once and for all it's effect to others
+				request.lineAmountType(),
 				getContactObject.get().getDefaultDiscount(),
 				organizationId
 		);
@@ -262,11 +264,6 @@ public class InvoiceService {
 		BigDecimal grandTotal = new BigDecimal(subTotal).add(totalTax);
 		invoice.setGrandTotal(grandTotal);
 		
-		return invoice;
-	}
-	
-	// TODO - work on setting ledger account
-	private Invoice setLineItemLedgerAccount(Invoice invoice) {
 		return invoice;
 	}
 	
