@@ -43,9 +43,15 @@ public class TaxRunner implements CommandLineRunner {
 			
 			ph.setLabel("PH");
 			Set<TaxTypes> PHTypes = Set.of(
-					new TaxTypes("OUTPUT", 12.00, "VAT on Income", COMPONENT_VAT, true),
-					new TaxTypes("INPUT", 12.00, "VAT on Expenses", COMPONENT_VAT, true),
-					new TaxTypes("BASEEXCLUDED", 0.00, "BAS Excluded", null, true)
+					new TaxTypes("VAT12", 12.00, "Value-Added Tax (12%)", COMPONENT_VAT, true),
+					new TaxTypes("VATZERO", 0.00, "	VAT Zero-Rated Sales", COMPONENT_VAT, true),
+					new TaxTypes("EXEMPT", 0.00, "VAT Exempt Sales", COMPONENT_VAT, true),
+					new TaxTypes("INPUTVAT", 12.00, "Input VAT on Purchases", COMPONENT_VAT, true),
+					new TaxTypes("VATIMPORT", 0.00, "	VAT on Importation", COMPONENT_VAT, true),
+					new TaxTypes("WHTEXP", 1.00, "Expanded Withholding Tax", COMPONENT_VAT, true),
+					new TaxTypes("WHTCOMP", 2.00, "	Withholding Tax on Compensation", COMPONENT_VAT, true),
+					new TaxTypes("PERCENTTAX", 3.00, "Percentage Tax (Non-VAT)", COMPONENT_VAT, true),
+					new TaxTypes("NONE", 0.00, "No Tax", null, true)
 			);
 			ph.setTypeCollections(PHTypes);
 			
