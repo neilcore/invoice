@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import core.hubby.backend.accounts.repositories.AccountRepository;
+import core.hubby.backend.accounts.repositories.projections.AccountLookup;
 import core.hubby.backend.accounts.services.AccountService;
 import core.hubby.backend.business.controller.dto.CreateInvoiceRequest;
 import core.hubby.backend.business.controller.dto.InvoiceTaxEligibility;
@@ -20,6 +22,7 @@ import core.hubby.backend.contacts.entities.Contact;
 import core.hubby.backend.contacts.services.ContactService;
 import core.hubby.backend.tax.repositories.TaxRateRepository;
 import core.hubby.backend.tax.repositories.TaxTypeRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
@@ -36,6 +39,7 @@ public class InvoiceService {
 	private final InvoiceRepository invoiceRepository;
 	private final ContactService contactService;
 	private final AccountService accountService;
+	private final AccountRepository accountRepository;
 	private final TaxRateRepository taxRateRepository;
 	private final TaxTypeRepository taxTypeRepository;
 	
@@ -166,6 +170,22 @@ public class InvoiceService {
 				.stream()
 				.map( lineItem -> {
 					LineItems createLineItem = new LineItems();
+					
+					/**
+					 * Set the tax type.
+					 * If overrideTaxType() isn't provided, then get tax type by account code.
+					 */
+					String taxType = null;
+					if (lineItem.overrideTaxType().isBlank()) {
+						Optional<AccountLookup> accountLookup = accountRepository
+								.findAccountByCodeAndOrganization(lineItem.accountCode(), organizationId);
+						if (accountLookup.isEmpty()) {
+							throw new EntityNotFoundException("Account lookup not found.");
+						}
+						taxType = accountLookup.get().getAccountCode();
+					} else {
+						taxType = lineItem.overrideTaxType();
+					}
 
 					// Check if line item discount rate is specified.
 					// If not, check if customer's default discount rate is specified.
@@ -191,7 +211,7 @@ public class InvoiceService {
 					 */
 					BigDecimal netLineAmount = new BigDecimal(lineItem.quantity() * lineItem.unitAmount());
 					BigDecimal effectiveRate = taxRateRepository.findEffectiveRateByOrganziationId(
-							organizationId, lineItem.taxType()).get();
+							organizationId, taxType).get();
 					
 					BigDecimal calculateTaxAmount = BigDecimal.ZERO;
 					BigDecimal lineItemTotal = BigDecimal.ZERO;
@@ -224,7 +244,7 @@ public class InvoiceService {
 					createLineItem.setLineAmount(calculateLineAmount);
 					createLineItem.setAccountCode(lineItem.accountCode());
 					createLineItem.setTaxAmount(calculateTaxAmount);
-					createLineItem.setTaxType(lineItem.taxType());
+					createLineItem.setTaxType(taxType);
 					createLineItem.setTotal(lineItemTotal);
 					
 					

@@ -1,5 +1,7 @@
 package core.hubby.backend.accounts.mapper;
 
+import java.util.Set;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
@@ -13,4 +15,6 @@ public interface AccountMapper {
 	@Mapping(target = "accountID", source = "accountId")
 	@Mapping(target = "name", source = "accountName")
 	AccountResponse toAccountResponse(Accounts account);
+	
+	Set<AccountResponse> toAccountResponses(Set<Accounts> accounts);
 }

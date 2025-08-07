@@ -1,6 +1,7 @@
 package core.hubby.backend.business.services;
 import org.springframework.stereotype.Service;
 
+import core.hubby.backend.accounts.services.AccountService;
 import core.hubby.backend.business.controller.dto.CreateOrganizationRequest;
 import core.hubby.backend.business.controller.dto.OrganizationDetailsResponse;
 import core.hubby.backend.business.entities.Organization;
@@ -27,6 +28,7 @@ public class OrganizationService {
 	private final OrganizationRepository organizationRepository;
 	private final OrganizationSettingsRepository organizationSettingsRepo;
 	private final OrganizationTypeRepository organizationTypeRepository;
+	private final AccountService accountService;
 	private final UserAccountService userAccountService;
 	private final CountryService countryService;
 	private final PhoneService phoneService;
@@ -36,6 +38,7 @@ public class OrganizationService {
 			OrganizationRepository organizationRepository,
 			OrganizationSettingsRepository organizationSettingsRepository,
 			OrganizationTypeRepository organizationTypeRepository,
+			AccountService accountService,
 			UserAccountService userAccountService,
 			CountryService countryService,
 			PhoneService phoneService,
@@ -43,6 +46,7 @@ public class OrganizationService {
 	) {
 		this.organizationRepository = organizationRepository;
 		this.organizationSettingsRepo = organizationSettingsRepository;
+		this.accountService = accountService;
 		this.organizationTypeRepository = organizationTypeRepository;
 		this.userAccountService = userAccountService;
 		this.countryService = countryService;

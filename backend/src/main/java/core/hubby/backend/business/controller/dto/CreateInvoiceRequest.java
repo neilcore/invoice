@@ -47,9 +47,9 @@ public record CreateInvoiceRequest(
 			@NotNull(message = "unitAmount component cannot be null.")
 			@Digits(fraction = 2, integer = 6)
 			Double unitAmount,
+			@NotBlank(message = "accountCode component cannot be blank.")
 			String accountCode,
-			@NotBlank(message = "taxType attribute cannot be blank.")
-			String taxType,
+			String overrideTaxType,
 			Integer discountRate
 	) {
 	}

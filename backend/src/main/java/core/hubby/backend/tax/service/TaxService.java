@@ -5,6 +5,8 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import core.hubby.backend.accounts.repositories.AccountRepository;
+import core.hubby.backend.accounts.repositories.projections.AccountLookup;
 import core.hubby.backend.business.entities.Organization;
 import core.hubby.backend.business.repositories.OrganizationRepository;
 import core.hubby.backend.tax.controller.dto.CreateTaxDetailsRequests;
@@ -19,11 +21,13 @@ import core.hubby.backend.tax.repositories.SalesTaxBasisRepository;
 import core.hubby.backend.tax.repositories.TaxDetailsRepository;
 import core.hubby.backend.tax.repositories.TaxTypeRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class TaxService {
+	private final AccountRepository accountRepository;
 	private final TaxDetailsRepository taxDetailsRepository;
 	private final TaxTypeRepository taxTypeRepository;
 	private final SalesTaxBasisRepository salesTaxBasisRepository;

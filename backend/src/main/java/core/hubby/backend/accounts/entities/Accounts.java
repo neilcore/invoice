@@ -5,7 +5,11 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.UUID;
 
+import org.hibernate.annotations.DialectOverride.Where;
+import org.hibernate.annotations.SQLRestriction;
+
 import core.hubby.backend.accounts.repositories.AccountRepository;
+import core.hubby.backend.business.entities.Organization;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -23,6 +27,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
+@SQLRestriction("archived <> true")
 @Table(name = "accounts", schema = "app_sc")
 @NoArgsConstructor
 @AllArgsConstructor
@@ -33,32 +38,34 @@ public class Accounts {
 	@Column(name = "account_id", nullable = false, unique = true)
 	private UUID accountId;
 	
-	@Column(nullable = false, unique = true)
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "organization", referencedColumnName = "id", nullable = false)
+	@NotNull(message = "organization attribute cannot be null.")
+	private Organization organization;
+	
+	@Column(nullable = false)
 	@NotBlank(message = "code attribute cannot be blank.")
 	private String code;
 	
-	@Column(name = "account_name", nullable = false, unique = true)
+	@Column(name = "account_name", nullable = false)
 	@NotBlank(message = "accountName attribute cannote be blank.")
 	private String accountName;
+	
+	@Column(name = "class_type", nullable = false)
+	@NotBlank(message = "classType attribute cannot be blank.")
+	private String classType;
 	
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "account_type", nullable = false, referencedColumnName = "id")
 	@NotNull(message = "accountType attribute cannot be null.")
 	private AccountType accountType;
 	
-	@Column(nullable = false)
-	@NotBlank(message = "status attribute cannot be blank.")
 	private String status;
 	
 	private String description;
 	
-	@Column(name = "tax_type", nullable = false)
-	@NotBlank(message = "taxType attribute cannot be blank.")
+	@Column(name = "tax_type")
 	private String taxType;
-	
-	@Column(name = "class_type", nullable = false)
-	@NotBlank(message = "classType attribute cannot be blank.")
-	private String classType;
 	
 	@Column(name = "enable_payments_account")
 	private boolean enablePaymentToAccount;
@@ -69,10 +76,26 @@ public class Accounts {
 	@Column(name = "add_to_watch_list")
 	private boolean addToWatchList;
 	
+	private boolean archived = false;
+	
 	public void setStatus(String stat) {
 		if (!Set.of(AccountRepository.ACCOUNT_STATUS_ACTIVE, AccountRepository.ACCOUNT_STATUS_ARCHIVED).contains(stat.toUpperCase())) {
 			throw new NoSuchElementException("Invalid status.");
 		}
 		this.status = stat;
+	}
+	
+	// Constructor for creating new account object
+	// The following are the required only attributes for creating object.
+	public Accounts(
+			@NotNull Organization org,
+			@NotNull String code,
+			@NotNull String accountName,
+			@NotNull AccountType type
+	) {
+		this.organization = org;
+		this.code = code;
+		this.accountName = accountName;
+		this.accountType = type;
 	}
 }

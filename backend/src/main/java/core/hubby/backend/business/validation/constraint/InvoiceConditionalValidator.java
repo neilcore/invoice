@@ -19,7 +19,7 @@ public class InvoiceConditionalValidator implements ConstraintValidator<Validate
 		 */
 		if (!value.taxEligible()) {
 			boolean presentTaxType = value.lineItems()
-					.stream().anyMatch(el -> el.taxType() != null);
+					.stream().anyMatch(el -> el.overrideTaxType() != null);
 			if (presentTaxType) {
 				return false;
 			}
