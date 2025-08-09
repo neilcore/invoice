@@ -44,8 +44,8 @@ public class OrganizationService {
 	
 	/**
 	 * This method will retrieve an organization entity.
-	 * If obj is null, return a new Organization object.
-	 * If obj is instance of UUID, retrieve the organization object using it's ID.
+	 * If @param obj is null, return a new Organization object.
+	 * If @param obj is instance of UUID, retrieve the organization object using it's ID.
 	 * @param obj - accepts {@linkplain Object} type.
 	 * @return - {@linkplain Organization} object type.
 	 */

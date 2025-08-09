@@ -120,8 +120,8 @@ public class InvoiceService {
 		invoice.setDueDate(request.dueDate());
 		
 		/**
-		 * If status attribute is not provided in the request.
-		 * Use the organization's default invoice status set in organization'ssettings.
+		 * If status is not provided in the request.
+		 * Use the organization's default invoice status set in organization's settings.
 		 */
 		Optional<String> status = Optional.empty();
 		if (request.status().isBlank()) {
@@ -135,7 +135,7 @@ public class InvoiceService {
 		// TODO - work the reference
 		invoice.setReference(request.reference());
 		
-		save(invoice);
+		this.save(invoice);
 	}
 	
 	/**
