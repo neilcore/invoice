@@ -1,14 +1,17 @@
 package core.hubby.backend.accounts.services;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
+import core.hubby.backend.accounts.controller.dto.AccountByOrganizationResponse;
 import core.hubby.backend.accounts.controller.dto.AccountCodeExistsResponse;
 import core.hubby.backend.accounts.controller.dto.AccountResponse;
 import core.hubby.backend.accounts.entities.AccountCategory;
 import core.hubby.backend.accounts.entities.AccountType;
 import core.hubby.backend.accounts.entities.Accounts;
+import core.hubby.backend.accounts.mapper.AccountMapper;
 import core.hubby.backend.accounts.repositories.AccountCategoryRepository;
 import core.hubby.backend.accounts.repositories.AccountRepository;
 import core.hubby.backend.accounts.repositories.AccountTypeRepository;
@@ -21,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class AccountService {
+	private final AccountMapper accountMapper;
 	private final AccountCategoryRepository accountCategoryRepository;
 	private final AccountRepository accountRepository;
 	private final AccountTypeRepository accountTypeRepository;
@@ -225,5 +229,15 @@ public class AccountService {
 				consultingAndAccountingExpenses, costOfGoodsSold,
 				utilities, travelAndEntertainment
 		));
+	}
+	
+	/**
+	 * This method will filter account objects by organization id.
+	 * @param organizationId - accepts {@linkplain java.util.UUID} object type.
+	 * @return - {@linkplain java.util.Set} that holds {@linkplain AccountByOrganizationResponse} objects.
+	 */
+	public Set<AccountByOrganizationResponse> getAccountsByOrganization(@NotNull UUID organizationId) {
+		Set<Accounts> getOrganizationAccounts = accountRepository.findAccountByOrganizationId(organizationId);
+		return accountMapper.toAccountByOrganizationResponses(getOrganizationAccounts);
 	}
 }

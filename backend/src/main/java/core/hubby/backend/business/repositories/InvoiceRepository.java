@@ -3,9 +3,13 @@ package core.hubby.backend.business.repositories;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import core.hubby.backend.business.entities.Invoice;
+import jakarta.transaction.Transactional;
 
 @Repository
 public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {	
@@ -27,5 +31,13 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
 	// Invoice type
 	static final String INVOICE_TYPE_CUSTOMER_INVOICE = "CUSTOMER_INVOICE";
 	static final String INVOICE_TYPE_SUPPLIER_INVOICE = "SUPPLIER_INVOICE";
+	
+	@Modifying
+	@Transactional
+	@Query("UPDATE Invoice i SET i.status = :status WHERE i.invoiceId = :invoiceId")
+	int updateInvoiceStatus(
+			@Param("invoiceId") UUID invoiceId,
+			@Param("status") String status
+	);
 
 }

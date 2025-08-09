@@ -13,15 +13,19 @@ import core.hubby.backend.accounts.repositories.AccountRepository;
 import core.hubby.backend.accounts.repositories.projections.AccountLookup;
 import core.hubby.backend.business.controller.dto.CreateInvoiceRequest;
 import core.hubby.backend.business.controller.dto.InvoiceTaxEligibility;
+import core.hubby.backend.business.controller.dto.UpdateInvoiceResponse;
 import core.hubby.backend.business.entities.Invoice;
 import core.hubby.backend.business.entities.LineItems;
+import core.hubby.backend.business.entities.embedded.InvoiceSettings;
 import core.hubby.backend.business.repositories.InvoiceRepository;
 import core.hubby.backend.business.repositories.OrganizationRepository;
+import core.hubby.backend.business.repositories.OrganizationSettingsRepository;
 import core.hubby.backend.contacts.entities.Contact;
 import core.hubby.backend.contacts.services.ContactService;
 import core.hubby.backend.tax.repositories.TaxRateRepository;
 import core.hubby.backend.tax.repositories.TaxTypeRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
@@ -34,7 +38,9 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class InvoiceService {
+
 	private final OrganizationRepository organizationRepository;
+	private final OrganizationSettingsRepository organizationSettingsRepository;
 	private final InvoiceRepository invoiceRepository;
 	private final ContactService contactService;
 	private final AccountRepository accountRepository;
@@ -68,8 +74,8 @@ public class InvoiceService {
 	/**
 	 * This method will retrieve an invoice object
 	 * @param obj - accepts {@linkplain Object} type
-	 * If obj is null, return a new invoice object.
-	 * If obj is instance of {@linkplain java.util.UUID} fetch invoice object
+	 * If @param obj is null, return a new invoice object.
+	 * If @param obj is instance of {@linkplain java.util.UUID} fetch invoice object
 	 * using it's ID
 	 * @return - {@linkplain Invoice} object type.
 	 */
@@ -112,7 +118,21 @@ public class InvoiceService {
 		
 		invoice.setDate(request.date());
 		invoice.setDueDate(request.dueDate());
-		invoice.setStatus(request.status().isEmpty() ? InvoiceRepository.INVOICE_STATUS_DRAFT : request.status()); // "DRAFT" is the default status
+		
+		/**
+		 * If status attribute is not provided in the request.
+		 * Use the organization's default invoice status set in organization'ssettings.
+		 */
+		Optional<String> status = Optional.empty();
+		if (request.status().isBlank()) {
+			InvoiceSettings invoiceSettings = organizationSettingsRepository.findSettingsByOrganizationId(organizationId);
+			status = Optional.of(invoiceSettings.getStatus());
+		}else {
+			status = Optional.of(request.status());
+		}
+		invoice.setStatus(status.get());
+		
+		// TODO - work the reference
 		invoice.setReference(request.reference());
 		
 		save(invoice);
@@ -283,6 +303,30 @@ public class InvoiceService {
 		invoice.setGrandTotal(grandTotal);
 		
 		return invoice;
+	}
+	
+	/**
+	 * This method will update the invoice's status.
+	 * @param invoiceId - accepts {@linkplain java.util.UUID} object type.
+	 * @param status - accepts {@linkplain java.util.String} object type.
+	 * @return - {@linkplain UpdateInvoiceResponse} object type.
+	 */
+	@Transactional
+	public UpdateInvoiceResponse updateInvoiceStatus(@NotNull UUID invoiceId, @NotNull String status) {
+		Invoice findInvoiceById = invoiceRepository.findById(invoiceId)
+				.orElseThrow(() -> new EntityNotFoundException("Invoice not found."));
+		String formerStatus = findInvoiceById.getStatus();
+		
+		findInvoiceById.setStatus(status);
+		invoiceRepository.save(findInvoiceById);
+		
+		String currentStatus = findInvoiceById.getStatus();
+		
+		return new UpdateInvoiceResponse(
+				findInvoiceById.getInvoiceId(),
+				formerStatus,
+				currentStatus
+		);
 	}
 	
 }

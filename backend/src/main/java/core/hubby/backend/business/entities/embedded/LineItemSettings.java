@@ -18,7 +18,7 @@ public class LineItemSettings implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private Double defaultUnitAmount;
+	private Double defaultQuantity;
 	private String defaultAccountCode;
 	private Integer defaultDiscountRate;
 }

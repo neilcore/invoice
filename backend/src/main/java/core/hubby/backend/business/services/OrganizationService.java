@@ -5,9 +5,13 @@ import core.hubby.backend.accounts.services.AccountService;
 import core.hubby.backend.business.controller.dto.CreateOrganizationRequest;
 import core.hubby.backend.business.controller.dto.OrganizationDetailsResponse;
 import core.hubby.backend.business.entities.Organization;
+import core.hubby.backend.business.entities.OrganizationSettings;
 import core.hubby.backend.business.entities.OrganizationType;
 import core.hubby.backend.business.entities.embedded.DefaultCurrency;
+import core.hubby.backend.business.entities.embedded.InvoiceSettings;
+import core.hubby.backend.business.entities.embedded.LineItemSettings;
 import core.hubby.backend.business.mapper.OrganizationMapper;
+import core.hubby.backend.business.repositories.InvoiceRepository;
 import core.hubby.backend.business.repositories.OrganizationRepository;
 import core.hubby.backend.business.repositories.OrganizationSettingsRepository;
 import core.hubby.backend.business.repositories.OrganizationTypeRepository;
@@ -17,6 +21,8 @@ import core.hubby.backend.core.service.CountryService;
 import core.hubby.backend.core.service.phone.PhoneService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.NotNull;
+import lombok.RequiredArgsConstructor;
 
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
@@ -24,6 +30,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class OrganizationService {
 	private final OrganizationRepository organizationRepository;
 	private final OrganizationSettingsRepository organizationSettingsRepo;
@@ -34,25 +41,6 @@ public class OrganizationService {
 	private final PhoneService phoneService;
 	private final OrganizationMapper organizationMapper;
 	
-	public OrganizationService(
-			OrganizationRepository organizationRepository,
-			OrganizationSettingsRepository organizationSettingsRepository,
-			OrganizationTypeRepository organizationTypeRepository,
-			AccountService accountService,
-			UserAccountService userAccountService,
-			CountryService countryService,
-			PhoneService phoneService,
-			OrganizationMapper organizationMapper
-	) {
-		this.organizationRepository = organizationRepository;
-		this.organizationSettingsRepo = organizationSettingsRepository;
-		this.accountService = accountService;
-		this.organizationTypeRepository = organizationTypeRepository;
-		this.userAccountService = userAccountService;
-		this.countryService = countryService;
-		this.phoneService = phoneService;
-		this.organizationMapper = organizationMapper;
-	}
 	
 	/**
 	 * This method will retrieve an organization entity.
@@ -78,6 +66,22 @@ public class OrganizationService {
 		return findOrganization.get();
 	}
 	
+	// This method will create the organization settings after creating the new organization
+	private void createOrganizationSettings(@NotNull Organization org) {
+		OrganizationSettings settings = new OrganizationSettings();
+		settings.setOrganization(org);
+		
+		InvoiceSettings invoiceSettings = new InvoiceSettings();
+		invoiceSettings.setStatus(InvoiceRepository.INVOICE_STATUS_DRAFT);
+		settings.setInvoiceSettings(invoiceSettings);
+		
+		LineItemSettings lineItemSetting = new LineItemSettings();
+		lineItemSetting.setDefaultQuantity(0.00);
+		settings.setLineItemSettings(lineItemSetting);
+		
+		organizationSettingsRepo.save(settings);
+	}
+	
 	/**
 	 * This will persist the organization object to database (the actual creation of the entity
 	 * to the database)
@@ -86,6 +90,8 @@ public class OrganizationService {
 	 */
 	private OrganizationDetailsResponse save(Organization organization) {
 		Organization newOrganization = organizationRepository.save(organization);
+		this.createOrganizationSettings(organization);
+		
 		return organizationMapper.toOrganizationResponse(newOrganization);
 	}
 	

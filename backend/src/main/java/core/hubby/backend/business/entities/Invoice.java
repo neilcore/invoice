@@ -43,6 +43,11 @@ public class Invoice implements java.io.Serializable {
 	@Column(name = "invoice_id", nullable = false, unique = true)
 	private UUID invoiceId;
 	
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "organization", nullable = false)
+	@NotNull(message = "organization attribute cannot be null.")
+	private Organization organization;
+	
 	@Column(name = "invoice_type", nullable = false)
 	@NotNull(message = "Invoice type cannot be null")
 	private String type;

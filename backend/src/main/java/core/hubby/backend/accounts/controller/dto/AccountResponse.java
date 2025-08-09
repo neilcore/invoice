@@ -15,8 +15,6 @@ public record AccountResponse(
 		String name,
 		@NotBlank(message = "taxType component cannot be blank.")
 		String taxType,
-		@NotBlank(message = "classType component cannot be blank.")
-		String classType,
 		@NotBlank(message = "status component cannot be blank.")
 		String status,
 		LocalDate updatedDate,
