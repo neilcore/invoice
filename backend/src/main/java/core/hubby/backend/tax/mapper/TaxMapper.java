@@ -1,4 +1,4 @@
-package core.hubby.backend.tax;
+package core.hubby.backend.tax.mapper;
 
 import java.math.BigDecimal;
 import java.util.List;

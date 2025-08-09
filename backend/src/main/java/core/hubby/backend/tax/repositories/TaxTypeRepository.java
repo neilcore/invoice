@@ -25,6 +25,7 @@ public interface TaxTypeRepository extends JpaRepository<TaxType, UUID> {
 			Tax can be applied to this invoice.
 			""";
 	
+	// query a tax type by country name - label holds a country name
 	Optional<TaxType> findByLabelIgnoreCase(String label);
 	
 	/**

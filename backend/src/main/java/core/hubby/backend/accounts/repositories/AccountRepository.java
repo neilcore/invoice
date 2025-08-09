@@ -14,6 +14,7 @@ import core.hubby.backend.accounts.repositories.projections.AccountLookup;
 
 @Repository
 public interface AccountRepository extends JpaRepository<Accounts, UUID> {
+	
 	// Statuses
 	static final String ACCOUNT_STATUS_ACTIVE = "ACTIVE";
 	static final String ACCOUNT_STATUS_ARCHIVED = "ARCHIVED";
@@ -36,7 +37,7 @@ public interface AccountRepository extends JpaRepository<Accounts, UUID> {
 	
 	boolean existsByCodeIgnoreCase(String code);
 	
-	Set<Accounts> findByClassTypeIgnoreCase(String classType);
+//	Set<Accounts> findByClassTypeIgnoreCase(String classType);
 	
 	@Query("SELECT ac FROM Accounts ac WHERE ac.archived = false")
 	Set<Accounts> findAllNotArchived();

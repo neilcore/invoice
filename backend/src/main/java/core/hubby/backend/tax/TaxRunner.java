@@ -2,7 +2,6 @@ package core.hubby.backend.tax;
 import java.util.Set;
 
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import core.hubby.backend.tax.entities.TaxType;
@@ -11,8 +10,10 @@ import core.hubby.backend.tax.repositories.TaxComponentRepository;
 import core.hubby.backend.tax.repositories.TaxTypeRepository;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * This default tax types will give you base start.
+ */
 @Component
-@Profile("dev")
 @RequiredArgsConstructor
 public class TaxRunner implements CommandLineRunner {
 	private static final String COMPONENT_GST = TaxComponentRepository.COMPONENT_GST;
@@ -39,6 +40,20 @@ public class TaxRunner implements CommandLineRunner {
 			
 			taxTypeRepository.save(au);
 			
+			/**
+			 * | **Code**     | **Used For**                                                              |
+				| ------------ | ------------------------------------------------------------------------- |
+				| `VAT12`      | Standard VAT on sales of goods/services.                                  |
+				| `VATZERO`    | Sales to PEZA-registered or export-oriented businesses.                   |
+				| `EXEMPT`     | Sale of agricultural products, education, etc. (not subject to VAT).      |
+				| `INPUTVAT`   | VAT you can claim back from purchases/expenses.                           |
+				| `VATIMPORT`  | VAT applied when importing goods into the Philippines.                    |
+				| `WHTEXP`     | For professional services and contractors.                                |
+				| `WHTCOMP`    | Applied on employee salaries (typically deducted by employer).            |
+				| `PERCENTTAX` | Applied to small businesses not VAT-registered (gross receipts tax).      |
+				| `NONE`       | For fully non-taxable transactions (e.g., donations, internal transfers). |
+
+			 */
 			TaxType ph = new TaxType();
 			
 			ph.setLabel("PH");

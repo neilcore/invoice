@@ -4,8 +4,6 @@ import java.time.LocalDate;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.UUID;
-
-import org.hibernate.annotations.DialectOverride.Where;
 import org.hibernate.annotations.SQLRestriction;
 
 import core.hubby.backend.accounts.repositories.AccountRepository;
@@ -51,9 +49,10 @@ public class Accounts {
 	@NotBlank(message = "accountName attribute cannote be blank.")
 	private String accountName;
 	
-	@Column(name = "class_type", nullable = false)
-	@NotBlank(message = "classType attribute cannot be blank.")
-	private String classType;
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "category_id", nullable = false, referencedColumnName = "id")
+	@NotNull(message = "category attribute cannot be null.")
+	private AccountCategory category;
 	
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "account_type", nullable = false, referencedColumnName = "id")
@@ -91,11 +90,13 @@ public class Accounts {
 			@NotNull Organization org,
 			@NotNull String code,
 			@NotNull String accountName,
-			@NotNull AccountType type
+			@NotNull AccountType type,
+			@NotNull AccountCategory category
 	) {
 		this.organization = org;
 		this.code = code;
 		this.accountName = accountName;
 		this.accountType = type;
+		this.category = category;
 	}
 }

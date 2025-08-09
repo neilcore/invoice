@@ -6,7 +6,6 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import core.hubby.backend.accounts.repositories.AccountRepository;
-import core.hubby.backend.accounts.repositories.projections.AccountLookup;
 import core.hubby.backend.business.entities.Organization;
 import core.hubby.backend.business.repositories.OrganizationRepository;
 import core.hubby.backend.tax.controller.dto.CreateTaxDetailsRequests;
@@ -110,5 +109,23 @@ public class TaxService {
 		);
 		
 		return new TaxDetailResponse(taxTypes, salesTaxPeriod);
+	}
+	
+	/**
+	 * This 
+	 * @param category
+	 * @return
+	 */
+	public String getTaxTypeByCategory(@NotNull String category) {
+		String taxType = null;
+		if (category.equalsIgnoreCase("REVENUE")) {
+			taxType = "OUTPUT";
+		} else if (category.equalsIgnoreCase("EXPENSE")) {
+			taxType = "INPUT";
+		} else { // for asset, liability, and equity
+			taxType = "NONE";
+		}
+		
+		return taxType;
 	}
 }

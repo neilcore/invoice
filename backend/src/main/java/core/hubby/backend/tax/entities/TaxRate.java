@@ -52,6 +52,10 @@ public class TaxRate implements Serializable {
 	@NotBlank(message = "name attribute cannot be null.")
 	private String name;
 	
+	@Column(name = "system_defined_name", nullable = false)
+	@NotBlank(message = "systemDefinedName attribute cannot be blank.")
+	private String systemDefinedName;
+	
 	@Column(name = "the_type", nullable = false, unique = true)
 	@NotBlank(message = "taxType attribute cannot be blank.")
 	private String taxType;

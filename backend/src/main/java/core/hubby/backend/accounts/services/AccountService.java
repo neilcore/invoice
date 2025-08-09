@@ -1,36 +1,30 @@
 package core.hubby.backend.accounts.services;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
-import org.springframework.security.data.repository.query.SecurityEvaluationContextExtension;
 import org.springframework.stereotype.Service;
 
 import core.hubby.backend.accounts.controller.dto.AccountCodeExistsResponse;
 import core.hubby.backend.accounts.controller.dto.AccountResponse;
+import core.hubby.backend.accounts.entities.AccountCategory;
 import core.hubby.backend.accounts.entities.AccountType;
 import core.hubby.backend.accounts.entities.Accounts;
-import core.hubby.backend.accounts.mapper.AccountMapper;
+import core.hubby.backend.accounts.repositories.AccountCategoryRepository;
 import core.hubby.backend.accounts.repositories.AccountRepository;
 import core.hubby.backend.accounts.repositories.AccountTypeRepository;
 import core.hubby.backend.business.entities.Organization;
 import core.hubby.backend.business.repositories.OrganizationRepository;
-import core.hubby.backend.core.api.CustomRestExceptionHandler;
+import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class AccountService {
-
-    private final SecurityEvaluationContextExtension securityEvaluationContextExtension;
-
-    private final CustomRestExceptionHandler customRestExceptionHandler;
+	private final AccountCategoryRepository accountCategoryRepository;
 	private final AccountRepository accountRepository;
 	private final AccountTypeRepository accountTypeRepository;
 	private final OrganizationRepository organizationRepository;
-	private final AccountMapper accountMapper;
 	
 	public AccountResponse createAccount() {
 		return null;
@@ -47,144 +41,189 @@ public class AccountService {
 		return new AccountCodeExistsResponse(code, checkIfExists);
 	}
 	
-	// TODO - work on getAccountByClassType method
-	public void getAccountByClassType(@NotNull String classType) {
-		Set<Accounts> classTypeAccounts = accountRepository.findByClassTypeIgnoreCase(classType);
-	}
 	
+	@Transactional
 	public void createDefaultAccounts(@NotNull UUID organizationId) {
+		
 		Organization getOrganization = organizationRepository.findById(organizationId).get();
-		Optional<AccountType> currentAsset = accountTypeRepository.findByNameIgnoreCase("CURRENT");
-		Optional<AccountType> inventoryAsset = accountTypeRepository.findByNameIgnoreCase("INVENTORY");
-		Optional<AccountType> fixedAsset = accountTypeRepository.findByNameIgnoreCase("FIXED");
+		
+		// Account categories
+		AccountCategory assetCat = accountCategoryRepository.findById(AccountCategoryRepository.assetId).get();
+		AccountCategory liabilityCat = accountCategoryRepository.findById(AccountCategoryRepository.liabilityId).get();
+		AccountCategory revenueCat = accountCategoryRepository.findById(AccountCategoryRepository.revenueId).get();
+		AccountCategory equityCat = accountCategoryRepository.findById(AccountCategoryRepository.equityId).get();
+		AccountCategory expenseCat = accountCategoryRepository.findById(AccountCategoryRepository.expenseId).get();
 		
 		// Create asset accounts
+		AccountType currentAsset = accountTypeRepository.save(new AccountType("Current Asset", ""));
 		Accounts accountReceivable = new Accounts(
 				getOrganization,
 				"100",
 				"Receivable Account",
-				currentAsset.get()
+				currentAsset,
+				assetCat
 		);
-		accountReceivable.setDescription("Account that tracks money owed to you by your customers.");
-		accountReceivable.setClassType(currentAsset.get().getCategory().getName());
+		accountReceivable.setDescription("Money owed to the busines.");
 		
+		Accounts preparedExpense = new Accounts(
+				getOrganization,
+				"103",
+				"Prepared Expenses",
+				currentAsset,
+				assetCat
+		);
+		preparedExpense.setDescription("Expenses paid in advance.");
+		
+		AccountType inventoryType = accountTypeRepository.save(new AccountType("Inventory", ""));
 		Accounts inventoryAssetAccount = new Accounts(
 				getOrganization,
 				"101",
 				"Inventory",
-				inventoryAsset.get()
+				inventoryType,
+				assetCat
 		);
 		inventoryAssetAccount.setDescription("Account for businesses that hold and track stock.");
-		inventoryAssetAccount.setClassType(inventoryAsset.get().getCategory().getName());
 		
+		AccountType fixedAssetType = accountTypeRepository.save(new AccountType("Fixed Assets", ""));
 		Accounts fixedAssetAccount = new Accounts(
 				getOrganization,
 				"102",
 				"Fixed Asset",
-				fixedAsset.get()
+				fixedAssetType,
+				assetCat
 		);
 		fixedAssetAccount.setDescription("Accounts for long-term assets.");
-		fixedAssetAccount.setClassType(fixedAsset.get().getCategory().getName());
 		
-		accountRepository.saveAll(List.of(accountReceivable, inventoryAssetAccount, fixedAssetAccount));
+		accountRepository.saveAll(List.of(accountReceivable, preparedExpense, inventoryAssetAccount, fixedAssetAccount));
 		
 		// Create liability accounts
-		Optional<AccountType> liabilityAcc = accountTypeRepository.findByNameIgnoreCase("LIABILITY");
+		AccountType currentLiabilityType = accountTypeRepository.save(new AccountType("Current Liability", ""));
 		Accounts accountPayable = new Accounts(
 				getOrganization,
 				"300",
 				"Payable Account",
-				liabilityAcc.get()
+				currentLiabilityType,
+				liabilityCat
 		);
 		accountPayable.setDescription("Tracks money you owe to your suppliers.");
-		accountPayable.setClassType(liabilityAcc.get().getCategory().getName());
 		
-		Accounts taxAcc = new Accounts(
-				getOrganization,
-				"301",
-				"Tax",
-				liabilityAcc.get()
-		);
-		taxAcc.setDescription("Accounts for taxes payable, such as Sales Tax (or VAT/GST), and other statutory liabilities.");
-		taxAcc.setClassType(liabilityAcc.get().getCategory().getName());
-		
+		AccountType liabilityType = accountTypeRepository.save(new AccountType("Liability", ""));
 		Accounts loans = new Accounts(
 				getOrganization,
 				"302",
-				"Loans",
-				liabilityAcc.get()
+				"Loans Payable",
+				liabilityType,
+				liabilityCat
 		);
-		loans.setDescription("Any long-term liabilities.");
-		loans.setClassType(liabilityAcc.get().getCategory().getName());
+		loans.setDescription("Long-term debt.");
 		
-		accountRepository.saveAll(List.of(accountPayable, taxAcc, loans));
+		accountRepository.saveAll(List.of(accountPayable, loans));
 		
 		// Create Equity accounts
-		Optional<AccountType> equityAcc = accountTypeRepository.findByNameIgnoreCase("EQUITY");
+		AccountType equityType = accountTypeRepository.save(new AccountType("Equity", ""));
 		Accounts annualEarning = new Accounts(
 				getOrganization,
 				"600",
-				"Current Year Earning",
-				equityAcc.get()
+				"Retained Earnings",
+				equityType,
+				equityCat
 		);
-		annualEarning.setDescription("Shows the profit or loss for the current financial year.");
-		annualEarning.setClassType(equityAcc.get().getCategory().getName());
+		annualEarning.setDescription("Profits retained in the busines.");
 		
-		accountRepository.saveAll(List.of(annualEarning));
+		Accounts ownersDrawing = new Accounts(
+				getOrganization,
+				"601",
+				"Owner’s Drawings",
+				equityType,
+				equityCat
+		);
+		ownersDrawing.setDescription("Owner withdrawals.");
+		
+		accountRepository.saveAll(List.of(annualEarning, ownersDrawing));
 		
 		// Create revenue accounts
-		Optional<AccountType> salesRevenueAcc = accountTypeRepository.findByNameIgnoreCase("SALES");
-		Optional<AccountType> revenueAcc = accountTypeRepository.findByNameIgnoreCase("REVENUE");
-		
-		Accounts salesAcc = new Accounts(
+		AccountType revenueType = accountTypeRepository.save(new AccountType("Revenue", ""));
+		Accounts salesRevenueAcc = new Accounts(
 				getOrganization,
 				"200",
-				"Sales Account",
-				salesRevenueAcc.get()
+				"Sales Revenue",
+				revenueType,
+				revenueCat
 		);
-		salesAcc.setDescription("For income generated from your core business operations.");
-		salesAcc.setClassType(salesRevenueAcc.get().getCategory().getName());
+		salesRevenueAcc.setDescription("Income from core operations.");
 		
-		Accounts discountGiven = new Accounts(
+		Accounts serviceIncomeAcc = new Accounts(
 				getOrganization,
 				"201",
-				"Discount Given",
-				revenueAcc.get()
+				"Service Income",
+				revenueType,
+				revenueCat
 		);
-		discountGiven.setDescription("Track any discounts you provide to customers.");
-		discountGiven.setClassType(revenueAcc.get().getCategory().getName());
+		serviceIncomeAcc.setDescription("Fees for services provided.");
 		
-		accountRepository.saveAll(List.of(salesAcc, discountGiven));
+		accountRepository.saveAll(List.of(salesRevenueAcc, serviceIncomeAcc));
 		
 		// Create expenses accounts
-		Optional<AccountType> expenseAcc = accountTypeRepository.findByNameIgnoreCase("EXPENSE");
+		AccountType expenseType = accountTypeRepository.save(new AccountType("Expense", ""));
 		Accounts officeExpenses = new Accounts(
 				getOrganization,
-				"200",
+				"300",
 				"Office Expenses",
-				expenseAcc.get()
+				expenseType,
+				expenseCat
 		);
 		officeExpenses.setDescription("Costs that a business incurs for the day-to-day operation and maintenance of its workspace.");
-		officeExpenses.setClassType(expenseAcc.get().getCategory().getName());
 		
 		Accounts advertisingExpenses = new Accounts(
 				getOrganization,
-				"201",
-				"Advertising",
-				expenseAcc.get()
+				"301",
+				"Marketing Expense",
+				expenseType,
+				expenseCat
 		);
 		advertisingExpenses.setDescription("Costs a business incurs to promote its products, services, or brand to a target audience.");
-		advertisingExpenses.setClassType(expenseAcc.get().getCategory().getName());
 		
 		Accounts consultingAndAccountingExpenses = new Accounts(
 				getOrganization,
-				"202",
+				"302",
 				"Consulting & Accounting",
-				expenseAcc.get()
+				expenseType,
+				expenseCat
 		);
 		consultingAndAccountingExpenses.setDescription("Costs a business incurs for professional services from external experts.");
-		consultingAndAccountingExpenses.setClassType(expenseAcc.get().getCategory().getName());
 		
-		accountRepository.saveAll(List.of(officeExpenses, advertisingExpenses, consultingAndAccountingExpenses));
+		AccountType directCost = accountTypeRepository.save(new AccountType("Direct Costs", ""));
+		Accounts costOfGoodsSold = new Accounts(
+				getOrganization,
+				"303",
+				"Cost of Goods Sold",
+				directCost,
+				expenseCat
+		);
+		costOfGoodsSold.setDescription("Cost of materials / production.");
+		
+		Accounts utilities = new Accounts(
+				getOrganization,
+				"304",
+				"Utilities",
+				expenseType,
+				expenseCat
+		);
+		utilities.setDescription("Electricity, water, etc.");
+		
+		Accounts travelAndEntertainment = new Accounts(
+				getOrganization,
+				"305",
+				"Travel & Entertainment",
+				expenseType,
+				expenseCat
+		);
+		travelAndEntertainment.setDescription("Business travel, meals.");
+		
+		accountRepository.saveAll(List.of(
+				officeExpenses, advertisingExpenses,
+				consultingAndAccountingExpenses, costOfGoodsSold,
+				utilities, travelAndEntertainment
+		));
 	}
 }

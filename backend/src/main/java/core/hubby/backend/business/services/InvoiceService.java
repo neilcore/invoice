@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import core.hubby.backend.accounts.repositories.AccountRepository;
 import core.hubby.backend.accounts.repositories.projections.AccountLookup;
-import core.hubby.backend.accounts.services.AccountService;
 import core.hubby.backend.business.controller.dto.CreateInvoiceRequest;
 import core.hubby.backend.business.controller.dto.InvoiceTaxEligibility;
 import core.hubby.backend.business.entities.Invoice;
@@ -38,7 +37,6 @@ public class InvoiceService {
 	private final OrganizationRepository organizationRepository;
 	private final InvoiceRepository invoiceRepository;
 	private final ContactService contactService;
-	private final AccountService accountService;
 	private final AccountRepository accountRepository;
 	private final TaxRateRepository taxRateRepository;
 	private final TaxTypeRepository taxTypeRepository;

@@ -30,4 +30,13 @@ public interface TaxRateRepository extends JpaRepository<TaxRate, UUID> {
 			@Param("organizationID") UUID organizationId,
 			@Param("type") String type
 	);
+	
+	@Query(
+			"SELECT tr.name FROM TaxRate tr WHERE tr.systemDefinedName = :systemDefinedName " +
+			" AND tr.organization = :organizationId"
+	)
+	Optional<String> findBySystemDefinedNameAndOrganizationId(
+			@Param("systemDefinedName") String systemDefinedName,
+			@Param("organizationId") UUID organizationId
+	);
 }

@@ -8,6 +8,8 @@ import jakarta.validation.constraints.NotNull;
 public record TaxRateRequests(
 		@NotBlank(message = "name component cannot be blank.")
 		String name,
+		@NotBlank(message = "systemDefinedName component cannot be blank.")
+		String systemDefinedName,
 		@NotBlank(message = "taxType component cannot be null.")
 		String taxType,
 		List<Component> taxComponents,

@@ -10,12 +10,12 @@ import org.springframework.stereotype.Service;
 
 import core.hubby.backend.business.entities.Organization;
 import core.hubby.backend.business.repositories.OrganizationRepository;
-import core.hubby.backend.tax.TaxMapper;
 import core.hubby.backend.tax.controller.dto.TaxRateRequests;
 import core.hubby.backend.tax.entities.TaxComponent;
 import core.hubby.backend.tax.entities.TaxRate;
 import core.hubby.backend.tax.entities.TaxType;
 import core.hubby.backend.tax.entities.embedded.TaxTypes;
+import core.hubby.backend.tax.mapper.TaxMapper;
 import core.hubby.backend.tax.repositories.TaxRateRepository;
 import core.hubby.backend.tax.repositories.TaxTypeRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -74,6 +74,7 @@ public class TaxRateService {
 					newTaxRate.setOrganization(organizationObj);
 					
 					newTaxRate.setName(request.name());
+					newTaxRate.setSystemDefinedName(request.systemDefinedName());
 					
 					// Set tax component
 					request.taxComponents().stream()
